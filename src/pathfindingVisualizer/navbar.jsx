@@ -1,8 +1,6 @@
 import React, { Component } from "react";
 import "./navbar.css";
 
-const brand = window.innerWidth > 600 ? "Pathfinding Visualizer" : "Pathfinder";
-
 class NavBar extends Component {
   state = {
     algorithm: "Visualize Algorithm",
@@ -10,6 +8,17 @@ class NavBar extends Component {
     pathState: false,
     mazeState: false,
     speedState: "Speed",
+    showAlgorithmDropdown: false,
+    showMazeDropdown: false,
+    showSpeedDropdown: false,
+  };
+
+  toggleDropdown = (type) => {
+    this.setState({
+      showAlgorithmDropdown: type === 'algorithm' ? !this.state.showAlgorithmDropdown : false,
+      showMazeDropdown: type === 'maze' ? !this.state.showMazeDropdown : false,
+      showSpeedDropdown: type === 'speed' ? !this.state.showSpeedDropdown : false,
+    });
   };
 
   selectAlgorithm(selection) {
@@ -152,76 +161,85 @@ class NavBar extends Component {
 
   render() {
     return (
-      <nav className="navbar navbar-expand navbar-dark bg-dark">
-        <span className="navbar-brand h1 mb-0">
-          {brand}
-        </span>
-        <div className="navbar-collapse" id="navbarNavDropdown">
-          <ul className="navbar-nav">
+      <div>
+        {/* Dòng 1: Title và GitHub link */}
+        <nav className="navbar navbar-expand navbar-dark bg-dark">
+          <div className="container-fluid">
+            <span className="navbar-brand h1 mb-0">
+              Pathfinding Visualizer
+            </span>
+            <a 
+              href="https://github.com/Hepha4438/hepha-pathfinding-visualizer" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="btn btn-outline-light btn-sm"
+            >
+              GitHub
+            </a>
+          </div>
+        </nav>
+
+        {/* Dòng 2: Controls */}
+        <nav className="navbar navbar-expand navbar-dark bg-secondary">
+          <div className="container-fluid">
+            <div className="navbar-collapse" id="navbarNavDropdown">
+              <ul className="navbar-nav">
+                {/* ...existing dropdown code... */}
             <li className="nav-item dropdown">
               <div className="dropdown">
                 <button
                   className="btn btn-light dropdown-toggle"
                   type="button"
-                  id="dropdownMenu1"
-                  data-toggle="dropdown"
-                  aria-haspopup="true"
-                  aria-expanded="false"
+                  onClick={() => this.toggleDropdown('algorithm')}
                 >
-                  Algorithms
+                  {this.state.algorithm === "Visualize Algorithm" ? "Algorithms" : this.state.algorithm}
                 </button>
-                <div className="dropdown-menu" aria-labelledby="dropdownMenu1">
-                  <button
-                    className="dropdown-item btn-light"
-                    type="button"
-                    onClick={() => this.selectAlgorithm("Visualize Dijkstra")}
-                  >
-                    Dijkstra's Algorithm
-                  </button>
-                  <button
-                    className="dropdown-item btn-light"
-                    type="button"
-                    onClick={() => this.selectAlgorithm("Visualize A*")}
-                  >
-                    A* Algorithm
-                  </button>
-                  <button
-                    className="dropdown-item btn-light"
-                    type="button"
-                    onClick={() => this.selectAlgorithm("Visualize Greedy BFS")}
-                  >
-                    Greedy Best First Search
-                  </button>
-                  <button
-                    className="dropdown-item btn-light"
-                    type="button"
-                    onClick={() =>
-                      this.selectAlgorithm("Visualize Bidirectional Greedy")
-                    }
-                  >
-                    Bidirectional Greedy Search
-                  </button>
-                  <div className="dropdown-divider"></div>
-                  <button
-                    className="dropdown-item btn-light"
-                    type="button"
-                    onClick={() =>
-                      this.selectAlgorithm("Visualize Breadth First Search")
-                    }
-                  >
-                    Breadth First Search
-                  </button>
-                  <button
-                    className="dropdown-item btn-light"
-                    type="button"
-                    onClick={() =>
-                      this.selectAlgorithm("Visualize Depth First Search")
-                    }
-                  >
-                    Depth First Search
-                  </button>
-                </div>
-              </div>{" "}
+                <ul className={`dropdown-menu ${this.state.showAlgorithmDropdown ? 'show' : ''}`}>
+                <li><button
+                  className="dropdown-item"
+                  type="button"
+                  onClick={() => {this.selectAlgorithm("Visualize Dijkstra"); this.toggleDropdown('');}}
+                >
+                  Dijkstra's Algorithm
+                </button></li>
+                <li><button
+                  className="dropdown-item"
+                  type="button"
+                  onClick={() => {this.selectAlgorithm("Visualize A*"); this.toggleDropdown('');}}
+                >
+                  A* Algorithm
+                </button></li>
+                <li><button
+                  className="dropdown-item"
+                  type="button"
+                  onClick={() => {this.selectAlgorithm("Visualize Greedy BFS"); this.toggleDropdown('');}}
+                >
+                  Greedy Best First Search
+                </button></li>
+                <li><button
+                  className="dropdown-item"
+                  type="button"
+                  onClick={() => {this.selectAlgorithm("Visualize Bidirectional Greedy"); this.toggleDropdown('');}}
+                >
+                  Bidirectional Greedy Search
+                </button></li>
+                <li><hr className="dropdown-divider" /></li>
+                <li><button
+                  className="dropdown-item"
+                  type="button"
+                  onClick={() => {this.selectAlgorithm("Visualize Breadth First Search"); this.toggleDropdown('');}}
+                >
+                  Breadth First Search
+                </button></li>
+                <li><button
+                  className="dropdown-item"
+                  type="button"
+                  onClick={() => {this.selectAlgorithm("Visualize Depth First Search"); this.toggleDropdown('');}}
+                >
+                  Depth First Search
+                </button></li>
+              </ul>
+              </div>
             </li>
             <li>
               <button
@@ -237,44 +255,41 @@ class NavBar extends Component {
                 <button
                   className="btn btn-light dropdown-toggle"
                   type="button"
-                  id="dropdownMenu1"
-                  data-toggle="dropdown"
-                  aria-haspopup="true"
-                  aria-expanded="false"
+                  onClick={() => this.toggleDropdown('maze')}
                 >
-                  Mazes
+                  {this.state.maze === "Generate Maze" ? "Mazes" : this.state.maze}
                 </button>
-                <div className="dropdown-menu" aria-labelledby="dropdownMenu1">
-                  <button
-                    className="dropdown-item btn-light"
-                    type="button"
-                    onClick={() => this.selectMaze("Generate Random Maze")}
-                  >
-                    Random Maze
-                  </button>
-                  <button
-                    className="dropdown-item btn-light"
-                    type="button"
-                    onClick={() => this.selectMaze("Generate Recursive Maze")}
-                  >
-                    Recursive Division Maze
-                  </button>
-                  <button
-                    className="dropdown-item btn-light"
-                    type="button"
-                    onClick={() => this.selectMaze("Generate Vertical Maze")}
-                  >
-                    Vertical Division Maze
-                  </button>
-                  <button
-                    className="dropdown-item btn-light"
-                    type="button"
-                    onClick={() => this.selectMaze("Generate Horizontal Maze")}
-                  >
-                    Horizontal Division Maze
-                  </button>
-                </div>
-              </div>{" "}
+                <ul className={`dropdown-menu ${this.state.showMazeDropdown ? 'show' : ''}`}>
+                <li><button
+                  className="dropdown-item"
+                  type="button"
+                  onClick={() => {this.selectMaze("Generate Random Maze"); this.toggleDropdown('');}}
+                >
+                  Random Maze
+                </button></li>
+                <li><button
+                  className="dropdown-item"
+                  type="button"
+                  onClick={() => {this.selectMaze("Generate Recursive Maze"); this.toggleDropdown('');}}
+                >
+                  Recursive Division Maze
+                </button></li>
+                <li><button
+                  className="dropdown-item"
+                  type="button"
+                  onClick={() => {this.selectMaze("Generate Vertical Maze"); this.toggleDropdown('');}}
+                >
+                  Vertical Division Maze
+                </button></li>
+                <li><button
+                  className="dropdown-item"
+                  type="button"
+                  onClick={() => {this.selectMaze("Generate Horizontal Maze"); this.toggleDropdown('');}}
+                >
+                  Horizontal Division Maze
+                </button></li>
+              </ul>
+              </div>
             </li>
             <li>
               <button
@@ -291,7 +306,7 @@ class NavBar extends Component {
                 className="btn btn-danger"
                 onClick={() => this.clearGrid()}
               >
-                Clear Gird
+                Clear Grid
               </button>
             </li>
             <li className="nav-item dropdown">
@@ -299,41 +314,40 @@ class NavBar extends Component {
                 <button
                   className="btn btn-info dropdown-toggle"
                   type="button"
-                  id="dropdownMenu1"
-                  data-toggle="dropdown"
-                  aria-haspopup="true"
-                  aria-expanded="false"
+                  onClick={() => this.toggleDropdown('speed')}
                 >
                   {this.state.speedState}
                 </button>
-                <div className="dropdown-menu" aria-labelledby="dropdownMenu1">
-                  <button
-                    className="dropdown-item btn-light"
-                    type="button"
-                    onClick={() => this.changeSpeed("Slow")}
-                  >
-                    Slow
-                  </button>
-                  <button
-                    className="dropdown-item btn-light"
-                    type="button"
-                    onClick={() => this.changeSpeed("Medium")}
-                  >
-                    Medium
-                  </button>
-                  <button
-                    className="dropdown-item btn-light"
-                    type="button"
-                    onClick={() => this.changeSpeed("Fast")}
-                  >
-                    Fast
-                  </button>
-                </div>
-              </div>{" "}
+                <ul className={`dropdown-menu ${this.state.showSpeedDropdown ? 'show' : ''}`}>
+                <li><button
+                  className="dropdown-item"
+                  type="button"
+                  onClick={() => {this.changeSpeed("Slow"); this.toggleDropdown('');}}
+                >
+                  Slow
+                </button></li>
+                <li><button
+                  className="dropdown-item"
+                  type="button"
+                  onClick={() => {this.changeSpeed("Medium"); this.toggleDropdown('');}}
+                >
+                  Medium
+                </button></li>
+                <li><button
+                  className="dropdown-item"
+                  type="button"
+                  onClick={() => {this.changeSpeed("Fast"); this.toggleDropdown('');}}
+                >
+                  Fast
+                </button></li>
+              </ul>
+              </div>
             </li>
           </ul>
         </div>
-      </nav>
+      </div>
+    </nav>
+  </div>
     );
   }
 }

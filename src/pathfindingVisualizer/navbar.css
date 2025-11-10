@@ -1,3 +1,14 @@
+/* Navbar row 1 - Title and GitHub */
+.navbar:first-child {
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Navbar row 2 - Controls */
+.navbar.bg-secondary {
+  padding: 0.25rem 1rem;
+}
+
 .navbar > .navbar-brand:hover,
 .navbar > .navbar-brand:focus {
   color: rgb(175, 216, 248);
@@ -5,6 +16,16 @@
 
 .navbar-brand {
   margin-right: 35px;
+}
+
+/* GitHub button styling */
+.btn-outline-light {
+  border-color: rgba(255,255,255,0.5);
+}
+
+.btn-outline-light:hover {
+  background-color: rgba(255,255,255,0.1);
+  border-color: white;
 }
 
 .btn {
@@ -15,10 +36,41 @@
 .dropdown-menu {
   margin-right: 35px;
   background-color: #343a40;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  display: none;
+  min-width: 160px;
+  padding: 0.5rem 0;
+  margin: 0.125rem 0 0;
+  border: 1px solid rgba(0,0,0,.15);
+  border-radius: 0.375rem;
+  box-shadow: 0 0.5rem 1rem rgba(0,0,0,.175);
+}
+
+.dropdown-menu.show {
+  display: block;
+}
+
+.dropdown {
+  position: relative;
 }
 
 .dropdown-item {
   color: white;
+  background-color: transparent;
+  border: none;
+  width: 100%;
+  padding: 0.25rem 1rem;
+  text-align: left;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.dropdown-item:hover {
+  color: #16181b;
+  background-color: #f8f9fa;
 }
 
 @media (max-width: 1250px) {
