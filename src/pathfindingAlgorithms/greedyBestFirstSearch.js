@@ -1,7 +1,12 @@
-export function greedyBFS(grid, startNode, finishNode) {
+import { getHeuristicFunction, METRIC_TYPES } from './metricSpace/index.js';
+
+export function greedyBFS(grid, startNode, finishNode, metricType = METRIC_TYPES.MANHATTAN, weight = 1) {
   if (!startNode || !finishNode || startNode === finishNode) {
     return false;
   }
+  
+  const heuristic = getHeuristicFunction(metricType, weight);
+  
   let unvisitedNodes = []; //open list
   let visitedNodesInOrder = []; //closed list
   startNode.distance = 0;
@@ -22,11 +27,11 @@ export function greedyBFS(grid, startNode, finishNode) {
       if (neighbourNotInUnvisitedNodes(neighbour, unvisitedNodes)) {
         unvisitedNodes.unshift(neighbour);
         neighbour.distance = distance;
-        neighbour.totalDistance = manhattenDistance(neighbour, finishNode);
+        neighbour.totalDistance = heuristic(neighbour, finishNode);
         neighbour.previousNode = closestNode;
       } else if (distance < neighbour.distance) {
         neighbour.distance = distance;
-        neighbour.totalDistance = manhattenDistance(neighbour, finishNode);
+        neighbour.totalDistance = heuristic(neighbour, finishNode);
         neighbour.previousNode = closestNode;
       }
     }
@@ -44,12 +49,6 @@ function getNeighbours(node, grid) {
   return neighbours.filter(
     (neighbour) => !neighbour.isWall && !neighbour.isVisited
   );
-}
-
-function manhattenDistance(node, finishNode) {
-  let x = Math.abs(node.row - finishNode.row);
-  let y = Math.abs(node.col - finishNode.col);
-  return x + y;
 }
 
 function neighbourNotInUnvisitedNodes(neighbour, unvisitedNodes) {

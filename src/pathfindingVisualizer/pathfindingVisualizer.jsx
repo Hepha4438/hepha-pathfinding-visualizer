@@ -252,7 +252,9 @@ class PathfindingVisualizer extends Component {
     }, this.state.speed);
   }
 
-  visualizeAStar() {
+  // ...existing code...
+
+  visualizeAStar(metricType = 'manhattan', weight = 1) {
     if (this.state.visualizingAlgorithm || this.state.generatingMaze) {
       return;
     }
@@ -261,7 +263,7 @@ class PathfindingVisualizer extends Component {
       const { grid } = this.state;
       const startNode = grid[startNodeRow][startNodeCol];
       const finishNode = grid[finishNodeRow][finishNodeCol];
-      const visitedNodesInOrder = astar(grid, startNode, finishNode);
+      const visitedNodesInOrder = astar(grid, startNode, finishNode, metricType, weight);
       const nodesInShortestPathOrder = getNodesInShortestPathOrderAstar(
         finishNode
       );
@@ -324,7 +326,7 @@ class PathfindingVisualizer extends Component {
     }, this.state.speed);
   }
 
-  visualizeBidirectionalGreedySearch() {
+  visualizeBidirectionalGreedySearch(metricType = 'manhattan', weight = 1) {
     if (this.state.visualizingAlgorithm || this.state.generatingMaze) {
       return;
     }
@@ -336,7 +338,9 @@ class PathfindingVisualizer extends Component {
       const visitedNodesInOrder = bidirectionalGreedySearch(
         grid,
         startNode,
-        finishNode
+        finishNode,
+        metricType,
+        weight
       );
       const visitedNodesInOrderStart = visitedNodesInOrder[0];
       const visitedNodesInOrderFinish = visitedNodesInOrder[1];

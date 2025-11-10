@@ -11,6 +11,9 @@ class NavBar extends Component {
     showAlgorithmDropdown: false,
     showMazeDropdown: false,
     showSpeedDropdown: false,
+    showMetricDropdown: false,
+    metricState: "Metric Space",
+    heuristicWeight: 1.0,
   };
 
   toggleDropdown = (type) => {
@@ -18,6 +21,7 @@ class NavBar extends Component {
       showAlgorithmDropdown: type === 'algorithm' ? !this.state.showAlgorithmDropdown : false,
       showMazeDropdown: type === 'maze' ? !this.state.showMazeDropdown : false,
       showSpeedDropdown: type === 'speed' ? !this.state.showSpeedDropdown : false,
+      showMetricDropdown: type === 'metric' ? !this.state.showMetricDropdown : false,
     });
   };
 
@@ -72,14 +76,19 @@ class NavBar extends Component {
       this.setState({ algorithm: "Select an Algorithm!" });
     } else {
       this.setState({ pathState: true });
+      
+      // Convert metric name to lowercase for algorithm usage
+      const metricType = this.state.metricState.toLowerCase();
+      const weight = this.state.heuristicWeight;
+      
       if (this.state.algorithm === "Visualize Dijkstra")
         this.props.visualizeDijkstra();
       else if (this.state.algorithm === "Visualize A*")
-        this.props.visualizeAStar();
+        this.props.visualizeAStar(metricType, weight);
       else if (this.state.algorithm === "Visualize Greedy BFS")
-        this.props.visualizeGreedyBFS();
+        this.props.visualizeGreedyBFS(metricType, weight);
       else if (this.state.algorithm === "Visualize Bidirectional Greedy")
-        this.props.visualizeBidirectionalGreedySearch();
+        this.props.visualizeBidirectionalGreedySearch(metricType, weight);
       else if (this.state.algorithm === "Visualize Breadth First Search")
         this.props.visualizeBFS();
       else if (this.state.algorithm === "Visualize Depth First Search")
@@ -151,13 +160,52 @@ class NavBar extends Component {
     if (this.props.visualizingAlgorithm || this.props.generatingMaze) {
       return;
     }
+    
     let value = [10, 10];
     if (speed === "Slow") value = [50, 30];
     else if (speed === "Medium") value = [25, 20];
     else if (speed === "Fast") value = [10, 10];
-    this.setState({ speedState: speed });
+    
+    // Same logic as selectAlgorithm: if different speed and path exists, clear path but keep walls/maze
+    if (speed !== this.state.speedState && this.state.pathState) {
+      this.clearPath();
+      this.setState({ speedState: speed });
+    } else {
+      this.setState({ speedState: speed });
+    }
+    
     this.props.updateSpeed(value[0], value[1]);
   }
+
+  selectMetric(metric) {
+    if (this.props.visualizingAlgorithm || this.props.generatingMaze) {
+      return;
+    }
+    
+    // Same logic as selectAlgorithm: if different metric and path exists, clear path but keep walls/maze
+    if (metric !== this.state.metricState && this.state.pathState) {
+      this.clearPath();
+      this.setState({ metricState: metric });
+    } else {
+      this.setState({ metricState: metric });
+    }
+  }
+
+  updateWeight = (event) => {
+    if (this.props.visualizingAlgorithm || this.props.generatingMaze) {
+      return;
+    }
+    
+    const weight = parseFloat(event.target.value);
+    
+    // Same logic as selectAlgorithm: if different weight and path exists, clear path but keep walls/maze
+    if (weight !== this.state.heuristicWeight && this.state.pathState) {
+      this.clearPath();
+      this.setState({ heuristicWeight: weight });
+    } else {
+      this.setState({ heuristicWeight: weight });
+    }
+  };
 
   render() {
     return (
@@ -343,6 +391,61 @@ class NavBar extends Component {
               </ul>
               </div>
             </li>
+
+            {/* Metric Space Dropdown */}
+            <li className="nav-item dropdown">
+              <div className="dropdown">
+                <button
+                  className="btn btn-warning dropdown-toggle"
+                  type="button"
+                  onClick={() => this.toggleDropdown('metric')}
+                >
+                  {this.state.metricState === "Metric Space" ? "Metric Space" : this.state.metricState}
+                </button>
+                <ul className={`dropdown-menu ${this.state.showMetricDropdown ? 'show' : ''}`}>
+                  <li><button
+                    className="dropdown-item"
+                    type="button"
+                    onClick={() => {this.selectMetric("Manhattan"); this.toggleDropdown('');}}
+                  >
+                    Manhattan
+                  </button></li>
+                  <li><button
+                    className="dropdown-item"
+                    type="button"
+                    onClick={() => {this.selectMetric("Euclidean"); this.toggleDropdown('');}}
+                  >
+                    Euclidean
+                  </button></li>
+                  <li><button
+                    className="dropdown-item"
+                    type="button"
+                    onClick={() => {this.selectMetric("Chebyshev"); this.toggleDropdown('');}}
+                  >
+                    Chebyshev
+                  </button></li>
+                </ul>
+              </div>
+            </li>
+
+            {/* Weight Control */}
+            <li className="nav-item">
+              <div className="d-flex align-items-center">
+                <label className="text-white me-2">Weight:</label>
+                <input
+                  type="range"
+                  className="form-range me-2"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={this.state.heuristicWeight}
+                  onChange={this.updateWeight}
+                  style={{width: "120px"}}
+                />
+                <span className="text-white">{this.state.heuristicWeight.toFixed(1)}</span>
+              </div>
+            </li>
+
           </ul>
         </div>
       </div>

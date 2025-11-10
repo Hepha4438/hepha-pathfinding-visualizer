@@ -1,7 +1,12 @@
-export function bidirectionalGreedySearch(grid, startNode, finishNode) {
+import { getHeuristicFunction, METRIC_TYPES } from './metricSpace/index.js';
+
+export function bidirectionalGreedySearch(grid, startNode, finishNode, metricType = METRIC_TYPES.MANHATTAN, weight = 1) {
   if (!startNode || !finishNode || startNode === finishNode) {
     return false;
   }
+  
+  const heuristic = getHeuristicFunction(metricType, weight);
+  
   let unvisitedNodesStart = [];
   let visitedNodesInOrderStart = [];
   let unvisitedNodesFinish = [];
@@ -41,11 +46,11 @@ export function bidirectionalGreedySearch(grid, startNode, finishNode) {
       if (neighbourNotInUnvisitedNodes(neighbour, unvisitedNodesStart)) {
         unvisitedNodesStart.unshift(neighbour);
         neighbour.distance = distance;
-        neighbour.totalDistance = manhattenDistance(neighbour, finishNode);
+        neighbour.totalDistance = heuristic(neighbour, finishNode);
         neighbour.previousNode = closestNodeStart;
       } else if (distance < neighbour.distance) {
         neighbour.distance = distance;
-        neighbour.totalDistance = manhattenDistance(neighbour, finishNode);
+        neighbour.totalDistance = heuristic(neighbour, finishNode);
         neighbour.previousNode = closestNodeStart;
       }
     }
@@ -63,11 +68,11 @@ export function bidirectionalGreedySearch(grid, startNode, finishNode) {
       if (neighbourNotInUnvisitedNodes(neighbour, unvisitedNodesFinish)) {
         unvisitedNodesFinish.unshift(neighbour);
         neighbour.distance = distance;
-        neighbour.totalDistance = manhattenDistance(neighbour, startNode);
+        neighbour.totalDistance = heuristic(neighbour, startNode);
         neighbour.previousNode = closestNodeFinish;
       } else if (distance < neighbour.distance) {
         neighbour.distance = distance;
-        neighbour.totalDistance = manhattenDistance(neighbour, startNode);
+        neighbour.totalDistance = heuristic(neighbour, startNode);
         neighbour.previousNode = closestNodeFinish;
       }
     }
@@ -97,12 +102,6 @@ function getNeighbours(node, grid) {
   return neighbours.filter(
     (neighbour) => !neighbour.isWall && !neighbour.isVisited
   );
-}
-
-function manhattenDistance(nodeA, nodeB) {
-  let x = Math.abs(nodeA.row - nodeB.row);
-  let y = Math.abs(nodeA.col - nodeB.col);
-  return x + y;
 }
 
 function neighbourNotInUnvisitedNodes(neighbour, unvisitedNodes) {
