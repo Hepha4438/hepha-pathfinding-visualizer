@@ -57,6 +57,7 @@ class PathfindingVisualizer extends Component {
     numColumns: initialNumColumns,
     speed: 10,
     mazeSpeed: 10,
+    showDistances: false,
   };
 
   updateDimensions = () => {
@@ -68,6 +69,10 @@ class PathfindingVisualizer extends Component {
 
   updateSpeed = (path, maze) => {
     this.setState({ speed: path, mazeSpeed: maze });
+  };
+
+  toggleDistanceMode = () => {
+    this.setState({ showDistances: !this.state.showDistances });
   };
 
   componentDidMount() {
@@ -141,6 +146,7 @@ class PathfindingVisualizer extends Component {
   animateShortestPath = (nodesInShortestPathOrder, visitedNodesInOrder) => {
     if (nodesInShortestPathOrder.length === 1)
       this.setState({ visualizingAlgorithm: false });
+
     for (let i = 1; i < nodesInShortestPathOrder.length; i++) {
       if (i === nodesInShortestPathOrder.length - 1) {
         setTimeout(() => {
@@ -155,6 +161,22 @@ class PathfindingVisualizer extends Component {
       }
       let node = nodesInShortestPathOrder[i];
       setTimeout(() => {
+        let currentGrid = this.state.grid.slice();
+        let newNode = {
+            ...currentGrid[node.row][node.col],
+            distance: node.distance,
+          };
+        currentGrid[node.row][node.col] = newNode;
+        // Show finish node distance on first shortest path animation step
+        if (i === 1) {
+          const finishNode = nodesInShortestPathOrder[nodesInShortestPathOrder.length - 1];
+          let currentGrid = this.state.grid.slice();
+          if (finishNode && currentGrid[finishNode.row] && currentGrid[finishNode.row][finishNode.col]) {
+            console.log('Setting finish node distance:', finishNode.distance);
+            currentGrid[finishNode.row][finishNode.col].distance = finishNode.distance;
+          }
+        }
+        this.setState({ grid: currentGrid });
         //shortest path node
         document.getElementById(`node-${node.row}-${node.col}`).className =
           "node node-shortest-path";
@@ -162,7 +184,7 @@ class PathfindingVisualizer extends Component {
     }
   };
 
-  animateAlgorithm = (visitedNodesInOrder, nodesInShortestPathOrder) => {
+  animateAlgorithm = (visitedNodesInOrder, nodesInShortestPathOrder, algorithmType = 'default') => {
     let newGrid = this.state.grid.slice();
     for (let row of newGrid) {
       for (let node of row) {
@@ -173,7 +195,37 @@ class PathfindingVisualizer extends Component {
         newGrid[node.row][node.col] = newNode;
       }
     }
+
+    // Update distance values from visited nodes (algorithm-specific)
+    // Skip for DFS as it only shows distance when reaching destination (like finishNode)
+    if (algorithmType !== 'DFS') {
+      for (let visitedNode of visitedNodesInOrder) {
+        if (visitedNode && newGrid[visitedNode.row] && newGrid[visitedNode.row][visitedNode.col]) {
+          // Skip finish node completely
+          if (!(visitedNode.row === finishNodeRow && visitedNode.col === finishNodeCol)) {
+            newGrid[visitedNode.row][visitedNode.col].distance = visitedNode.distance;
+          }
+        }
+      }
+    }
+
+    // Ensure finish node distance is reset to Infinity
+    if (newGrid[finishNodeRow] && newGrid[finishNodeRow][finishNodeCol]) {
+      newGrid[finishNodeRow][finishNodeCol].distance = Infinity;
+    }
+
+    // For DFS: reset distance of all nodes in shortest path to Infinity
+    // So they don't show distance until shortest path animation starts
+    if (algorithmType === 'DFS') {
+      for (let pathNode of nodesInShortestPathOrder) {
+        if (newGrid[pathNode.row] && newGrid[pathNode.row][pathNode.col]) {
+          newGrid[pathNode.row][pathNode.col].distance = Infinity;
+        }
+      }
+    }
+
     this.setState({ grid: newGrid });
+
     for (let i = 1; i <= visitedNodesInOrder.length; i++) {
       let node = visitedNodesInOrder[i];
       if (i === visitedNodesInOrder.length) {
@@ -186,7 +238,14 @@ class PathfindingVisualizer extends Component {
         return;
       }
       setTimeout(() => {
-        //visited node
+        // Update grid state to mark node as visited
+        let currentGrid = this.state.grid.slice();
+        if (node && currentGrid[node.row] && currentGrid[node.row][node.col]) {
+          currentGrid[node.row][node.col].isVisited = true;
+          this.setState({ grid: currentGrid });
+        }
+
+        //visited node CSS
         document.getElementById(`node-${node.row}-${node.col}`).className =
           "node node-visited";
       }, i * this.state.speed);
@@ -305,11 +364,11 @@ class PathfindingVisualizer extends Component {
       const nodesInShortestPathOrder = getNodesInShortestPathOrderDFS(
         finishNode
       );
-      this.animateAlgorithm(visitedNodesInOrder, nodesInShortestPathOrder);
+      this.animateAlgorithm(visitedNodesInOrder, nodesInShortestPathOrder, 'DFS');
     }, this.state.speed);
   }
 
-  visualizeGreedyBFS() {
+  visualizeGreedyBFS(metricType = 'manhattan', weight = 1) {
     if (this.state.visualizingAlgorithm || this.state.generatingMaze) {
       return;
     }
@@ -318,7 +377,7 @@ class PathfindingVisualizer extends Component {
       const { grid } = this.state;
       const startNode = grid[startNodeRow][startNodeCol];
       const finishNode = grid[finishNodeRow][finishNodeCol];
-      const visitedNodesInOrder = greedyBFS(grid, startNode, finishNode);
+      const visitedNodesInOrder = greedyBFS(grid, startNode, finishNode, metricType, weight);
       const nodesInShortestPathOrder = getNodesInShortestPathOrderGreedyBFS(
         finishNode
       );
@@ -441,6 +500,7 @@ class PathfindingVisualizer extends Component {
         <NavBar
           visualizingAlgorithm={this.state.visualizingAlgorithm}
           generatingMaze={this.state.generatingMaze}
+          showDistances={this.state.showDistances}
           visualizeDijkstra={this.visualizeDijkstra.bind(this)}
           visualizeAStar={this.visualizeAStar.bind(this)}
           visualizeGreedyBFS={this.visualizeGreedyBFS.bind(this)}
@@ -458,6 +518,7 @@ class PathfindingVisualizer extends Component {
           clearGrid={this.clearGrid.bind(this)}
           clearPath={this.clearPath.bind(this)}
           updateSpeed={this.updateSpeed.bind(this)}
+          toggleDistanceMode={this.toggleDistanceMode.bind(this)}
         />
         <div
           className={
@@ -478,6 +539,7 @@ class PathfindingVisualizer extends Component {
                     isVisited,
                     isShortest,
                     isWall,
+                    distance,
                   } = node;
                   return (
                     <Node
@@ -489,6 +551,8 @@ class PathfindingVisualizer extends Component {
                       isVisited={isVisited}
                       isShortest={isShortest}
                       isWall={isWall}
+                      distance={distance}
+                      showDistances={this.state.showDistances}
                       onMouseDown={(row, col) => this.handleMouseDown(row, col)}
                       onMouseEnter={(row, col) =>
                         this.handleMouseEnter(row, col)
@@ -598,12 +662,13 @@ const getInitialGrid = (numRows, numColumns) => {
 };
 
 const createNode = (row, col) => {
+  const isStart = row === startNodeRow && col === startNodeCol;
   return {
     row,
     col,
-    isStart: row === startNodeRow && col === startNodeCol,
+    isStart: isStart,
     isFinish: row === finishNodeRow && col === finishNodeCol,
-    distance: Infinity,
+    distance: isStart ? 0 : Infinity, // Start node gets distance 0 immediately
     totalDistance: Infinity,
     isVisited: false,
     isShortest: false,

@@ -16,6 +16,8 @@ class Node extends Component {
       isWall,
       isVisited,
       isShortest,
+      distance,
+      showDistances,
       onMouseEnter,
       onMouseDown,
       onMouseUp,
@@ -49,6 +51,15 @@ class Node extends Component {
       cellHeight = Math.floor((height - 50) / numRows);
     }
 
+    // Simple logic: 
+    // - Start node: always show (distance = 0)
+    // - Visited nodes: show when visited
+    // - Finish node: show when has valid distance (algorithm reached it)
+    // - Never show Infinity
+    const shouldShowDistance = showDistances && 
+      (isStart || isVisited || isShortest || (isFinish && distance !== Infinity && distance !== undefined && distance >= 0));
+    const displayDistance = (shouldShowDistance && distance !== Infinity && distance !== undefined && distance >= 0) ? distance : '';
+
     return (
       <div
         id={`node-${row}-${col}`}
@@ -57,7 +68,11 @@ class Node extends Component {
         onMouseEnter={() => onMouseEnter(row, col)}
         onMouseDown={() => onMouseDown(row, col)}
         onMouseUp={() => onMouseUp()}
-      ></div>
+      >
+        {shouldShowDistance && displayDistance !== '' && displayDistance !== undefined && displayDistance !== Infinity && (
+          <span className="node-distance">{displayDistance}</span>
+        )}
+      </div>
     );
   }
 }

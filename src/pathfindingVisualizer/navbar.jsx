@@ -446,6 +446,18 @@ class NavBar extends Component {
               </div>
             </li>
 
+            {/* Distance Mode Toggle */}
+            <li>
+              <button
+                type="button"
+                className={`btn ${this.props.showDistances ? 'btn-warning' : 'btn-outline-light'}`}
+                onClick={() => this.props.toggleDistanceMode()}
+                title="Toggle distance values display on visited nodes"
+              >
+                {this.props.showDistances ? 'Hide Distances' : 'Show Distances'}
+              </button>
+            </li>
+
           </ul>
         </div>
       </div>

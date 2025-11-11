@@ -5,15 +5,18 @@ export function depthFirstSearch(grid, startNode, finishNode) {
   let unvisitedNodes = [];
   let visitedNodesInOrder = [];
   unvisitedNodes.push(startNode);
+  
   while (unvisitedNodes.length !== 0) {
     let closestNode = unvisitedNodes.shift();
     if (closestNode.isWall) continue;
     if (closestNode === finishNode) return visitedNodesInOrder;
     visitedNodesInOrder.push(closestNode);
     closestNode.isVisited = true;
+    
     let unvisitedNeighbours = getUnvisitedNeighbours(closestNode, grid);
     for (let unvisitedNeighbour of unvisitedNeighbours) {
       unvisitedNeighbour.previousNode = closestNode;
+      // DFS: No distance calculation for visited nodes
       unvisitedNodes.unshift(unvisitedNeighbour);
     }
   }
@@ -37,5 +40,11 @@ export function getNodesInShortestPathOrderDFS(finishNode) {
     nodesInShortestPathOrder.unshift(currentNode);
     currentNode = currentNode.previousNode;
   }
+  
+  // Set distance based on index in shortest path
+  for (let i = 0; i < nodesInShortestPathOrder.length; i++) {
+    nodesInShortestPathOrder[i].distance = i;
+  }
+  
   return nodesInShortestPathOrder;
 }

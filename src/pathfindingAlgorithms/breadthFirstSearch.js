@@ -4,16 +4,23 @@ export function breadthFirstSearch(grid, startNode, finishNode) {
   }
   let unvisitedNodes = [];
   let visitedNodesInOrder = [];
+  startNode.distance = 0; // BFS guarantees shortest distance
   unvisitedNodes.push(startNode);
+  
   while (unvisitedNodes.length !== 0) {
     let closestNode = unvisitedNodes.shift();
     if (closestNode.isWall) continue;
     if (closestNode === finishNode) return visitedNodesInOrder;
     visitedNodesInOrder.push(closestNode);
     closestNode.isVisited = true;
+    
     let unvisitedNeighbours = getUnvisitedNeighbours(closestNode, grid);
     for (let unvisitedNeighbour of unvisitedNeighbours) {
       unvisitedNeighbour.previousNode = closestNode;
+      // Set distance = parent distance + 1 (shortest path in unweighted graph)
+      if (unvisitedNeighbour.distance === Infinity || unvisitedNeighbour.distance === undefined) {
+        unvisitedNeighbour.distance = closestNode.distance + 1;
+      }
       if (neighbourNotInUnvisitedNodes(unvisitedNeighbour, unvisitedNodes)) {
         unvisitedNodes.push(unvisitedNeighbour);
       }

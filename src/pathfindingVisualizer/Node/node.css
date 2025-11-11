@@ -3,15 +3,48 @@
   height: var(--height);
   border: 1px solid rgb(175, 216, 248);
   /*   outline: 0.2px solid rgb(175, 216, 248); */
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.node-distance {
+  font-size: 10px;
+  font-weight: bold;
+  color: #ffffff;
+  pointer-events: none;
+  user-select: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 100;
+  line-height: 1;
 }
 
 .node-start {
   background-color: green;
 }
 
+/* Distance styling for start node (green background) */
+.node-start .node-distance {
+  color: #ffffff;
+  background-color: transparent;
+  font-weight: 900;
+}
+
 .node-finish {
   background-color: red;
+}
+
+/* Distance styling for finish node (red background) */
+.node-finish .node-distance {
+  color: #ffffff;
+  background-color: transparent;
+  font-weight: 900;
 }
 
 .node-finish-reached {
