@@ -276,6 +276,7 @@ class PathfindingVisualizer extends Component {
         let newNode = {
           ...node,
           isVisited: false,
+          isIntersection: false,
         };
         newGrid[node.row][node.col] = newNode;
       }

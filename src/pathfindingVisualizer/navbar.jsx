@@ -66,7 +66,7 @@ class NavBar extends Component {
       return;
     }
     if (this.state.pathState) {
-      this.clearTemp();
+      this.clearPath();
       return;
     }
     if (
@@ -76,22 +76,22 @@ class NavBar extends Component {
       this.setState({ algorithm: "Select an Algorithm!" });
     } else {
       this.setState({ pathState: true });
-      
+
       // Convert metric name to lowercase for algorithm usage
       const metricType = this.state.metricState.toLowerCase();
       const weight = this.state.heuristicWeight;
-      
-      if (this.state.algorithm === "Visualize Dijkstra")
+
+      if (this.state.algorithm === "Dijkstra")
         this.props.visualizeDijkstra();
-      else if (this.state.algorithm === "Visualize A*")
+      else if (this.state.algorithm === "A*")
         this.props.visualizeAStar(metricType, weight);
-      else if (this.state.algorithm === "Visualize Greedy BFS")
+      else if (this.state.algorithm === "Greedy BFS")
         this.props.visualizeGreedyBFS(metricType, weight);
-      else if (this.state.algorithm === "Visualize Bidirectional Greedy")
+      else if (this.state.algorithm === "Bidirectional Greedy")
         this.props.visualizeBidirectionalGreedySearch(metricType, weight);
-      else if (this.state.algorithm === "Visualize Breadth First Search")
+      else if (this.state.algorithm === "Breadth First Search")
         this.props.visualizeBFS();
-      else if (this.state.algorithm === "Visualize Depth First Search")
+      else if (this.state.algorithm === "Depth First Search")
         this.props.visualizeDFS();
     }
   }
@@ -109,14 +109,15 @@ class NavBar extends Component {
     ) {
       this.setState({ maze: "Select a Maze!" });
     } else {
+      this.clearTemp();
       this.setState({ mazeState: true });
-      if (this.state.maze === "Generate Random Maze")
+      if (this.state.maze === "Random Maze")
         this.props.generateRandomMaze();
-      else if (this.state.maze === "Generate Recursive Maze")
+      else if (this.state.maze === "Recursive Division Maze")
         this.props.generateRecursiveDivisionMaze();
-      else if (this.state.maze === "Generate Vertical Maze")
+      else if (this.state.maze === "Vertical Division Maze")
         this.props.generateVerticalMaze();
-      else if (this.state.maze === "Generate Horizontal Maze")
+      else if (this.state.maze === "Horizontal Division Maze")
         this.props.generateHorizontalMaze();
     }
   }
@@ -160,12 +161,12 @@ class NavBar extends Component {
     if (this.props.visualizingAlgorithm || this.props.generatingMaze) {
       return;
     }
-    
+
     let value = [10, 10];
     if (speed === "Slow") value = [50, 30];
     else if (speed === "Medium") value = [25, 20];
     else if (speed === "Fast") value = [10, 10];
-    
+
     // Same logic as selectAlgorithm: if different speed and path exists, clear path but keep walls/maze
     if (speed !== this.state.speedState && this.state.pathState) {
       this.clearPath();
@@ -173,7 +174,7 @@ class NavBar extends Component {
     } else {
       this.setState({ speedState: speed });
     }
-    
+
     this.props.updateSpeed(value[0], value[1]);
   }
 
@@ -181,7 +182,7 @@ class NavBar extends Component {
     if (this.props.visualizingAlgorithm || this.props.generatingMaze) {
       return;
     }
-    
+
     // Same logic as selectAlgorithm: if different metric and path exists, clear path but keep walls/maze
     if (metric !== this.state.metricState && this.state.pathState) {
       this.clearPath();
@@ -195,9 +196,9 @@ class NavBar extends Component {
     if (this.props.visualizingAlgorithm || this.props.generatingMaze) {
       return;
     }
-    
+
     const weight = parseFloat(event.target.value);
-    
+
     // Same logic as selectAlgorithm: if different weight and path exists, clear path but keep walls/maze
     if (weight !== this.state.heuristicWeight && this.state.pathState) {
       this.clearPath();
@@ -216,9 +217,9 @@ class NavBar extends Component {
             <span className="navbar-brand h1 mb-0">
               Pathfinding Visualizer
             </span>
-            <a 
-              href="https://github.com/Hepha4438/hepha-pathfinding-visualizer" 
-              target="_blank" 
+            <a
+              href="https://github.com/Hepha4438/hepha-pathfinding-visualizer"
+              target="_blank"
               rel="noopener noreferrer"
               className="btn btn-outline-light btn-sm"
             >
@@ -246,28 +247,28 @@ class NavBar extends Component {
                 <li><button
                   className="dropdown-item"
                   type="button"
-                  onClick={() => {this.selectAlgorithm("Visualize Dijkstra"); this.toggleDropdown('');}}
+                  onClick={() => {this.selectAlgorithm("Dijkstra"); this.toggleDropdown('');}}
                 >
                   Dijkstra's Algorithm
                 </button></li>
                 <li><button
                   className="dropdown-item"
                   type="button"
-                  onClick={() => {this.selectAlgorithm("Visualize A*"); this.toggleDropdown('');}}
+                  onClick={() => {this.selectAlgorithm("A*"); this.toggleDropdown('');}}
                 >
                   A* Algorithm
                 </button></li>
                 <li><button
                   className="dropdown-item"
                   type="button"
-                  onClick={() => {this.selectAlgorithm("Visualize Greedy BFS"); this.toggleDropdown('');}}
+                  onClick={() => {this.selectAlgorithm("Greedy BFS"); this.toggleDropdown('');}}
                 >
                   Greedy Best First Search
                 </button></li>
                 <li><button
                   className="dropdown-item"
                   type="button"
-                  onClick={() => {this.selectAlgorithm("Visualize Bidirectional Greedy"); this.toggleDropdown('');}}
+                  onClick={() => {this.selectAlgorithm("Bidirectional Greedy"); this.toggleDropdown('');}}
                 >
                   Bidirectional Greedy Search
                 </button></li>
@@ -275,14 +276,14 @@ class NavBar extends Component {
                 <li><button
                   className="dropdown-item"
                   type="button"
-                  onClick={() => {this.selectAlgorithm("Visualize Breadth First Search"); this.toggleDropdown('');}}
+                  onClick={() => {this.selectAlgorithm("Breadth First Search"); this.toggleDropdown('');}}
                 >
                   Breadth First Search
                 </button></li>
                 <li><button
                   className="dropdown-item"
                   type="button"
-                  onClick={() => {this.selectAlgorithm("Visualize Depth First Search"); this.toggleDropdown('');}}
+                  onClick={() => {this.selectAlgorithm("Depth First Search"); this.toggleDropdown('');}}
                 >
                   Depth First Search
                 </button></li>
@@ -295,7 +296,7 @@ class NavBar extends Component {
                 className="btn btn-success"
                 onClick={() => this.visualizeAlgorithm()}
               >
-                {this.state.algorithm}
+                Visualize
               </button>
             </li>
             <li className="nav-item dropdown">
@@ -311,28 +312,28 @@ class NavBar extends Component {
                 <li><button
                   className="dropdown-item"
                   type="button"
-                  onClick={() => {this.selectMaze("Generate Random Maze"); this.toggleDropdown('');}}
+                  onClick={() => {this.selectMaze("Random Maze"); this.toggleDropdown('');}}
                 >
                   Random Maze
                 </button></li>
                 <li><button
                   className="dropdown-item"
                   type="button"
-                  onClick={() => {this.selectMaze("Generate Recursive Maze"); this.toggleDropdown('');}}
+                  onClick={() => {this.selectMaze("Recursive Division Maze"); this.toggleDropdown('');}}
                 >
                   Recursive Division Maze
                 </button></li>
                 <li><button
                   className="dropdown-item"
                   type="button"
-                  onClick={() => {this.selectMaze("Generate Vertical Maze"); this.toggleDropdown('');}}
+                  onClick={() => {this.selectMaze("Vertical Division Maze"); this.toggleDropdown('');}}
                 >
                   Vertical Division Maze
                 </button></li>
                 <li><button
                   className="dropdown-item"
                   type="button"
-                  onClick={() => {this.selectMaze("Generate Horizontal Maze"); this.toggleDropdown('');}}
+                  onClick={() => {this.selectMaze("Horizontal Division Maze"); this.toggleDropdown('');}}
                 >
                   Horizontal Division Maze
                 </button></li>
@@ -345,7 +346,7 @@ class NavBar extends Component {
                 className="btn btn-success"
                 onClick={() => this.generateMaze()}
               >
-                {this.state.maze}
+                Generate
               </button>
             </li>
             <li>
@@ -354,7 +355,7 @@ class NavBar extends Component {
                 className="btn btn-danger"
                 onClick={() => this.clearGrid()}
               >
-                Clear Grid
+                Reset
               </button>
             </li>
             <li className="nav-item dropdown">
