@@ -30,6 +30,9 @@ export function bidirectionalGreedySearch(grid, startNode, finishNode, metricTyp
     visitedNodesInOrderStart.push(closestNodeStart);
     visitedNodesInOrderFinish.push(closestNodeFinish);
     if (isNeighbour(closestNodeStart, closestNodeFinish)) {
+      // Mark intersection nodes
+      closestNodeStart.isIntersection = true;
+      closestNodeFinish.isIntersection = true;
       return [visitedNodesInOrderStart, visitedNodesInOrderFinish, true];
     }
 
@@ -37,6 +40,8 @@ export function bidirectionalGreedySearch(grid, startNode, finishNode, metricTyp
     let neighbours = getNeighbours(closestNodeStart, grid);
     for (let neighbour of neighbours) {
       if (!neighbourNotInUnvisitedNodes(neighbour, unvisitedNodesFinish)) {
+        // Mark intersection node
+        neighbour.isIntersection = true;
         visitedNodesInOrderStart.push(closestNodeStart);
         visitedNodesInOrderFinish.push(neighbour);
         return [visitedNodesInOrderStart, visitedNodesInOrderFinish, true];
@@ -59,7 +64,8 @@ export function bidirectionalGreedySearch(grid, startNode, finishNode, metricTyp
     neighbours = getNeighbours(closestNodeFinish, grid);
     for (let neighbour of neighbours) {
       if (!neighbourNotInUnvisitedNodes(neighbour, unvisitedNodesStart)) {
-        visitedNodesInOrderStart.push(closestNodeFinish);
+        // Mark intersection node
+        neighbour.isIntersection = true;
         visitedNodesInOrderStart.push(neighbour);
         return [visitedNodesInOrderStart, visitedNodesInOrderFinish, true];
       }

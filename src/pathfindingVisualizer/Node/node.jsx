@@ -16,6 +16,7 @@ class Node extends Component {
       isWall,
       isVisited,
       isShortest,
+      isIntersection,
       distance,
       showDistances,
       onMouseEnter,
@@ -27,7 +28,9 @@ class Node extends Component {
       numColumns,
     } = this.props;
 
-    const extraClass = isStart
+    const extraClass = isIntersection
+      ? "node node-intersection"
+      : isStart
       ? "node node-start"
       : isFinish
       ? "node node-finish"

@@ -127,11 +127,12 @@ class PathfindingVisualizer extends Component {
     }
     for (let row = 0; row < this.state.grid.length; row++) {
       for (let col = 0; col < this.state.grid[0].length; col++) {
+        const element = document.getElementById(`node-${row}-${col}`);
         if (
-          document.getElementById(`node-${row}-${col}`).className ===
-          "node node-shortest-path"
+          element.className === "node node-shortest-path" ||
+          element.className === "node node-intersection"
         ) {
-          document.getElementById(`node-${row}-${col}`).className = "node";
+          element.className = "node";
         }
       }
     }
@@ -175,11 +176,21 @@ class PathfindingVisualizer extends Component {
             console.log('Setting finish node distance:', finishNode.distance);
             currentGrid[finishNode.row][finishNode.col].distance = finishNode.distance;
           }
+
+          // Show intersection nodes when shortest path animation starts
+          for (let pathNode of nodesInShortestPathOrder) {
+            if (pathNode.isIntersection && currentGrid[pathNode.row] && currentGrid[pathNode.row][pathNode.col]) {
+              document.getElementById(`node-${pathNode.row}-${pathNode.col}`).className =
+                "node node-intersection";
+            }
+          }
         }
         this.setState({ grid: currentGrid });
-        //shortest path node
-        document.getElementById(`node-${node.row}-${node.col}`).className =
-          "node node-shortest-path";
+        //shortest path node - but not if it's an intersection node
+        if (!node.isIntersection) {
+          document.getElementById(`node-${node.row}-${node.col}`).className =
+            "node node-shortest-path";
+        }
       }, i * (3 * this.state.speed));
     }
   };
@@ -258,6 +269,42 @@ class PathfindingVisualizer extends Component {
     nodesInShortestPathOrder,
     isShortedPath
   ) {
+    // Pre-set distance values for all visited nodes (similar to animateAlgorithm)
+    let newGrid = this.state.grid.slice();
+    for (let row of newGrid) {
+      for (let node of row) {
+        let newNode = {
+          ...node,
+          isVisited: false,
+        };
+        newGrid[node.row][node.col] = newNode;
+      }
+    }
+    
+    // Update distance values for visited nodes from both sides
+    for (let visitedNode of visitedNodesInOrderStart) {
+      if (visitedNode && newGrid[visitedNode.row] && newGrid[visitedNode.row][visitedNode.col]) {
+        if (!(visitedNode.row === finishNodeRow && visitedNode.col === finishNodeCol)) {
+          newGrid[visitedNode.row][visitedNode.col].distance = visitedNode.distance;
+        }
+      }
+    }
+    
+    for (let visitedNode of visitedNodesInOrderFinish) {
+      if (visitedNode && newGrid[visitedNode.row] && newGrid[visitedNode.row][visitedNode.col]) {
+        if (!(visitedNode.row === finishNodeRow && visitedNode.col === finishNodeCol)) {
+          newGrid[visitedNode.row][visitedNode.col].distance = visitedNode.distance;
+        }
+      }
+    }
+    
+    // Ensure finish node distance is reset to Infinity
+    if (newGrid[finishNodeRow] && newGrid[finishNodeRow][finishNodeCol]) {
+      newGrid[finishNodeRow][finishNodeCol].distance = Infinity;
+    }
+    
+    this.setState({ grid: newGrid });
+    
     let len = Math.max(
       visitedNodesInOrderStart.length,
       visitedNodesInOrderFinish.length
@@ -283,13 +330,26 @@ class PathfindingVisualizer extends Component {
         return;
       }
       setTimeout(() => {
+        // Update grid state to mark nodes as visited (similar to animateAlgorithm)
+        let currentGrid = this.state.grid.slice();
+        
         //visited nodes
-        if (nodeA !== undefined)
+        if (nodeA !== undefined) {
+          if (currentGrid[nodeA.row] && currentGrid[nodeA.row][nodeA.col]) {
+            currentGrid[nodeA.row][nodeA.col].isVisited = true;
+          }
           document.getElementById(`node-${nodeA.row}-${nodeA.col}`).className =
             "node node-visited";
-        if (nodeB !== undefined)
+        }
+        if (nodeB !== undefined) {
+          if (currentGrid[nodeB.row] && currentGrid[nodeB.row][nodeB.col]) {
+            currentGrid[nodeB.row][nodeB.col].isVisited = true;
+          }
           document.getElementById(`node-${nodeB.row}-${nodeB.col}`).className =
             "node node-visited";
+        }
+        
+        this.setState({ grid: currentGrid });
       }, i * this.state.speed);
     }
   }
@@ -539,6 +599,7 @@ class PathfindingVisualizer extends Component {
                     isVisited,
                     isShortest,
                     isWall,
+                    isIntersection,
                     distance,
                   } = node;
                   return (
@@ -551,6 +612,7 @@ class PathfindingVisualizer extends Component {
                       isVisited={isVisited}
                       isShortest={isShortest}
                       isWall={isWall}
+                      isIntersection={isIntersection}
                       distance={distance}
                       showDistances={this.state.showDistances}
                       onMouseDown={(row, col) => this.handleMouseDown(row, col)}
@@ -705,12 +767,14 @@ const getGridWithoutPath = (grid) => {
   let newGrid = grid.slice();
   for (let row of grid) {
     for (let node of row) {
+      const isStart = node.row === startNodeRow && node.col === startNodeCol;
       let newNode = {
         ...node,
-        distance: Infinity,
+        distance: isStart ? 0 : Infinity, // Start node gets distance 0
         totalDistance: Infinity,
         isVisited: false,
         isShortest: false,
+        isIntersection: false, // Reset intersection status
         previousNode: null,
       };
       newGrid[node.row][node.col] = newNode;
@@ -741,6 +805,10 @@ const updateNodesForRender = (
     if (node.row === finishNodeRow && node.col === finishNodeCol) {
       return newGrid;
     }
+    // Don't change intersection nodes to shortest path
+    if (node.isIntersection) {
+      continue;
+    }
     let newNode = {
       ...node,
       isVisited: false,
@@ -748,6 +816,7 @@ const updateNodesForRender = (
     };
     newGrid[node.row][node.col] = newNode;
   }
+  return newGrid;
 };
 
 const getVisitedNodesInOrder = (
