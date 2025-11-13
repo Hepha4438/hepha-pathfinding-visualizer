@@ -58,6 +58,14 @@ class PathfindingVisualizer extends Component {
     speed: 10,
     mazeSpeed: 10,
     showDistances: false,
+    // Add overlay state
+    showResults: false,
+    algorithmResults: {
+      algorithmName: '',
+      pathLength: 0,
+      visitedNodes: 0,
+      memoryUsage: 0
+    }
   };
 
   updateDimensions = () => {
@@ -144,7 +152,7 @@ class PathfindingVisualizer extends Component {
     });
   }
 
-  animateShortestPath = (nodesInShortestPathOrder, visitedNodesInOrder) => {
+  animateShortestPath = (nodesInShortestPathOrder, visitedNodesInOrder, algorithmName = 'Algorithm') => {
     if (nodesInShortestPathOrder.length === 1)
       this.setState({ visualizingAlgorithm: false });
 
@@ -157,6 +165,17 @@ class PathfindingVisualizer extends Component {
             visitedNodesInOrder
           );
           this.setState({ grid: newGrid, visualizingAlgorithm: false });
+          
+          // Calculate and show results
+          const pathLength = nodesInShortestPathOrder.length > 1 ? nodesInShortestPathOrder.length - 1 : 0;
+          // Add 1 to visited nodes count if path was found (finish node reached)
+          const visitedNodes = nodesInShortestPathOrder.length > 1 ? visitedNodesInOrder.length + 1 : visitedNodesInOrder.length;
+          const memoryUsage = Math.max(visitedNodesInOrder.length, nodesInShortestPathOrder.length);
+          
+          // Show results overlay after a short delay
+          setTimeout(() => {
+            this.showAlgorithmResults(algorithmName, pathLength, visitedNodes, memoryUsage);
+          }, 500);
         }, i * (3 * this.state.speed));
         return;
       }
@@ -243,7 +262,8 @@ class PathfindingVisualizer extends Component {
         setTimeout(() => {
           this.animateShortestPath(
             nodesInShortestPathOrder,
-            visitedNodesInOrder
+            visitedNodesInOrder,
+            algorithmType === 'DFS' ? 'Depth First Search' : this.currentAlgorithmName || 'Algorithm'
           );
         }, i * this.state.speed);
         return;
@@ -322,7 +342,8 @@ class PathfindingVisualizer extends Component {
           if (isShortedPath) {
             this.animateShortestPath(
               nodesInShortestPathOrder,
-              visitedNodesInOrder
+              visitedNodesInOrder,
+              'Bidirectional Greedy Search'
             );
           } else {
             this.setState({ visualizingAlgorithm: false });
@@ -360,6 +381,7 @@ class PathfindingVisualizer extends Component {
       return;
     }
     this.setState({ visualizingAlgorithm: true });
+    this.currentAlgorithmName = "Dijkstra's Algorithm";
     setTimeout(() => {
       const { grid } = this.state;
       const startNode = grid[startNodeRow][startNodeCol];
@@ -372,13 +394,12 @@ class PathfindingVisualizer extends Component {
     }, this.state.speed);
   }
 
-  // ...existing code...
-
   visualizeAStar(metricType = 'manhattan', weight = 1) {
     if (this.state.visualizingAlgorithm || this.state.generatingMaze) {
       return;
     }
     this.setState({ visualizingAlgorithm: true });
+    this.currentAlgorithmName = "A* Search";
     setTimeout(() => {
       const { grid } = this.state;
       const startNode = grid[startNodeRow][startNodeCol];
@@ -396,6 +417,7 @@ class PathfindingVisualizer extends Component {
       return;
     }
     this.setState({ visualizingAlgorithm: true });
+    this.currentAlgorithmName = "Breadth First Search";
     setTimeout(() => {
       const { grid } = this.state;
       const startNode = grid[startNodeRow][startNodeCol];
@@ -434,6 +456,7 @@ class PathfindingVisualizer extends Component {
       return;
     }
     this.setState({ visualizingAlgorithm: true });
+    this.currentAlgorithmName = "Greedy Best First Search";
     setTimeout(() => {
       const { grid } = this.state;
       const startNode = grid[startNodeRow][startNodeCol];
@@ -554,6 +577,60 @@ class PathfindingVisualizer extends Component {
     }, this.state.mazeSpeed);
   }
 
+  // Add function to show results overlay
+  showAlgorithmResults = (algorithmName, pathLength, visitedNodes, memoryUsage) => {
+    this.setState({
+      showResults: true,
+      algorithmResults: {
+        algorithmName,
+        pathLength,
+        visitedNodes,
+        memoryUsage
+      }
+    });
+  };
+
+  // Add function to hide results overlay
+  hideAlgorithmResults = () => {
+    this.setState({ showResults: false });
+  };
+
+  // Add results overlay component
+  renderResultsOverlay = () => {
+    if (!this.state.showResults) return null;
+    
+    const { algorithmName, pathLength, visitedNodes, memoryUsage } = this.state.algorithmResults;
+    
+    return (
+      <div className="results-overlay" onClick={this.hideAlgorithmResults}>
+        <div className="results-box" onClick={(e) => e.stopPropagation()}>
+          <div className="results-header">
+            <h3>Algorithm Results</h3>
+            <button className="close-btn" onClick={this.hideAlgorithmResults}>×</button>
+          </div>
+          <div className="results-content">
+            <div className="result-item">
+              <span className="result-label">Algorithm:</span>
+              <span className="result-value">{algorithmName}</span>
+            </div>
+            <div className="result-item">
+              <span className="result-label">Path Length:</span>
+              <span className="result-value">{pathLength}</span>
+            </div>
+            <div className="result-item">
+              <span className="result-label">Visited Nodes:</span>
+              <span className="result-value">{visitedNodes}</span>
+            </div>
+            <div className="result-item">
+              <span className="result-label">Memory Usage:</span>
+              <span className="result-value">{memoryUsage}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   render() {
     let { grid } = this.state;
     return (
@@ -632,6 +709,7 @@ class PathfindingVisualizer extends Component {
             );
           })}
         </div>
+        {this.renderResultsOverlay()}
       </React.Fragment>
     );
   }
