@@ -459,6 +459,19 @@ class NavBar extends Component {
               </button>
             </li>
 
+            {/* Skip Animation Toggle */}
+            <li>
+              <button
+                type="button"
+                className={`btn ${this.props.skipAnimation ? 'btn-info' : 'btn-outline-info'}`}
+                onClick={() => this.props.toggleSkipAnimation()}
+                disabled={this.props.visualizingAlgorithm || this.props.generatingMaze}
+                title="Skip animation and show results immediately"
+              >
+                {this.props.skipAnimation ? 'Animation ON' : 'Skip Animation'}
+              </button>
+            </li>
+
             {/* Set Start/Finish Nodes */}
             <li>
               <button

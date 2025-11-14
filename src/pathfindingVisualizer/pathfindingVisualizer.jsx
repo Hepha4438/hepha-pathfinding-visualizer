@@ -58,6 +58,7 @@ class PathfindingVisualizer extends Component {
     speed: 10,
     mazeSpeed: 10,
     showDistances: false,
+    skipAnimation: false, // Add skip animation mode
     // Add overlay state
     showResults: false,
     algorithmResults: {
@@ -91,6 +92,10 @@ class PathfindingVisualizer extends Component {
 
   toggleDistanceMode = () => {
     this.setState({ showDistances: !this.state.showDistances });
+  };
+
+  toggleSkipAnimation = () => {
+    this.setState({ skipAnimation: !this.state.skipAnimation });
   };
 
   componentDidMount() {
@@ -182,6 +187,53 @@ class PathfindingVisualizer extends Component {
     if (nodesInShortestPathOrder.length === 1)
       this.setState({ visualizingAlgorithm: false });
 
+    // Skip animation mode - show results immediately
+    if (this.state.skipAnimation) {
+      let newGrid = updateNodesForRender(
+        this.state.grid,
+        nodesInShortestPathOrder,
+        visitedNodesInOrder
+      );
+      
+      // Update grid with distances immediately - including start node
+      for (let i = 0; i < nodesInShortestPathOrder.length; i++) {
+        let node = nodesInShortestPathOrder[i];
+        if (newGrid[node.row] && newGrid[node.row][node.col]) {
+          newGrid[node.row][node.col].distance = node.distance;
+        }
+        
+        // Only update CSS classes for non-start/finish nodes
+        if (i > 0 && !(node.row === finishNodeRow && node.col === finishNodeCol)) {
+          if (node.isIntersection) {
+            document.getElementById(`node-${node.row}-${node.col}`).className =
+              "node node-intersection";
+          } else {
+            document.getElementById(`node-${node.row}-${node.col}`).className =
+              "node node-shortest-path";
+          }
+        }
+      }
+      
+      // Show finish node distance immediately (if path found)
+      if (nodesInShortestPathOrder.length > 1) {
+        const finishNode = nodesInShortestPathOrder[nodesInShortestPathOrder.length - 1];
+        if (finishNode && newGrid[finishNode.row] && newGrid[finishNode.row][finishNode.col]) {
+          newGrid[finishNode.row][finishNode.col].distance = finishNode.distance;
+        }
+      }
+
+      this.setState({ grid: newGrid, visualizingAlgorithm: false });
+      
+      // Calculate and show results immediately
+      const pathLength = nodesInShortestPathOrder.length > 1 ? nodesInShortestPathOrder.length - 1 : 0;
+      const visitedNodes = nodesInShortestPathOrder.length > 1 ? visitedNodesInOrder.length + 1 : visitedNodesInOrder.length;
+      const memoryUsage = maxMemoryUsage;
+      
+      this.showAlgorithmResults(algorithmName, pathLength, visitedNodes, memoryUsage);
+      return;
+    }
+
+    // Normal animation
     for (let i = 1; i < nodesInShortestPathOrder.length; i++) {
       if (i === nodesInShortestPathOrder.length - 1) {
         setTimeout(() => {
@@ -205,6 +257,7 @@ class PathfindingVisualizer extends Component {
         }, i * (3 * this.state.speed));
         return;
       }
+      
       let node = nodesInShortestPathOrder[i];
       setTimeout(() => {
         let currentGrid = this.state.grid.slice();
@@ -280,6 +333,35 @@ class PathfindingVisualizer extends Component {
       }
     }
 
+    // Skip animation mode - show all visited nodes immediately
+    if (this.state.skipAnimation) {
+      // Mark all visited nodes immediately, but skip start/finish nodes
+      for (let visitedNode of visitedNodesInOrder) {
+        if (visitedNode && newGrid[visitedNode.row] && newGrid[visitedNode.row][visitedNode.col]) {
+          newGrid[visitedNode.row][visitedNode.col].isVisited = true;
+          
+          // Only update CSS for non-start/finish nodes
+          if (!(visitedNode.row === startNodeRow && visitedNode.col === startNodeCol) && 
+              !(visitedNode.row === finishNodeRow && visitedNode.col === finishNodeCol)) {
+            document.getElementById(`node-${visitedNode.row}-${visitedNode.col}`).className =
+              "node node-visited";
+          }
+        }
+      }
+      
+      this.setState({ grid: newGrid });
+      
+      // Proceed directly to shortest path
+      this.animateShortestPath(
+        nodesInShortestPathOrder,
+        visitedNodesInOrder,
+        algorithmType === 'DFS' ? 'Depth First Search' : this.currentAlgorithmName || 'Algorithm',
+        maxMemoryUsage
+      );
+      return;
+    }
+
+    // Normal animation
     this.setState({ grid: newGrid });
 
     for (let i = 1; i <= visitedNodesInOrder.length; i++) {
@@ -353,6 +435,56 @@ class PathfindingVisualizer extends Component {
     
     this.setState({ grid: newGrid });
     
+    // Skip animation mode - show all visited nodes immediately
+    if (this.state.skipAnimation) {
+      // Mark all visited nodes from both sides immediately
+      for (let visitedNode of visitedNodesInOrderStart) {
+        if (visitedNode && newGrid[visitedNode.row] && newGrid[visitedNode.row][visitedNode.col]) {
+          newGrid[visitedNode.row][visitedNode.col].isVisited = true;
+          
+          // Only update CSS for non-start/finish nodes
+          if (!(visitedNode.row === startNodeRow && visitedNode.col === startNodeCol) && 
+              !(visitedNode.row === finishNodeRow && visitedNode.col === finishNodeCol)) {
+            document.getElementById(`node-${visitedNode.row}-${visitedNode.col}`).className =
+              "node node-visited";
+          }
+        }
+      }
+      
+      for (let visitedNode of visitedNodesInOrderFinish) {
+        if (visitedNode && newGrid[visitedNode.row] && newGrid[visitedNode.row][visitedNode.col]) {
+          newGrid[visitedNode.row][visitedNode.col].isVisited = true;
+          
+          // Only update CSS for non-start/finish nodes
+          if (!(visitedNode.row === startNodeRow && visitedNode.col === startNodeCol) && 
+              !(visitedNode.row === finishNodeRow && visitedNode.col === finishNodeCol)) {
+            document.getElementById(`node-${visitedNode.row}-${visitedNode.col}`).className =
+              "node node-visited";
+          }
+        }
+      }
+      
+      this.setState({ grid: newGrid });
+      
+      // Proceed directly to shortest path
+      let visitedNodesInOrder = getVisitedNodesInOrder(
+        visitedNodesInOrderStart,
+        visitedNodesInOrderFinish
+      );
+      if (isShortedPath) {
+        this.animateShortestPath(
+          nodesInShortestPathOrder,
+          visitedNodesInOrder,
+          'Bidirectional Greedy Search',
+          this.bidirectionalMaxMemoryUsage || visitedNodesInOrder.length
+        );
+      } else {
+        this.setState({ visualizingAlgorithm: false });
+      }
+      return;
+    }
+    
+    // Normal animation
     let len = Math.max(
       visitedNodesInOrderStart.length,
       visitedNodesInOrderFinish.length
@@ -856,6 +988,7 @@ class PathfindingVisualizer extends Component {
           visualizingAlgorithm={this.state.visualizingAlgorithm}
           generatingMaze={this.state.generatingMaze}
           showDistances={this.state.showDistances}
+          skipAnimation={this.state.skipAnimation}
           settingMode={this.state.settingMode}
           visualizeDijkstra={this.visualizeDijkstra.bind(this)}
           visualizeAStar={this.visualizeAStar.bind(this)}
@@ -875,6 +1008,7 @@ class PathfindingVisualizer extends Component {
           clearPath={this.clearPath.bind(this)}
           updateSpeed={this.updateSpeed.bind(this)}
           toggleDistanceMode={this.toggleDistanceMode.bind(this)}
+          toggleSkipAnimation={this.toggleSkipAnimation.bind(this)}
           activateSetStartMode={this.activateSetStartMode.bind(this)}
           activateSetFinishMode={this.activateSetFinishMode.bind(this)}
           cancelSettingMode={this.cancelSettingMode.bind(this)}
