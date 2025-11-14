@@ -40,10 +40,10 @@ const initialNumRows = initialNum[0];
 const initialNumColumns = initialNum[1];
 
 const startFinishNode = getStartFinishNode(initialNumRows, initialNumColumns);
-const startNodeRow = startFinishNode[0];
-const startNodeCol = startFinishNode[1];
-const finishNodeRow = startFinishNode[2];
-const finishNodeCol = startFinishNode[3];
+let startNodeRow = startFinishNode[0];
+let startNodeCol = startFinishNode[1];
+let finishNodeRow = startFinishNode[2];
+let finishNodeCol = startFinishNode[3];
 
 class PathfindingVisualizer extends Component {
   state = {
@@ -73,7 +73,9 @@ class PathfindingVisualizer extends Component {
     isResizing: false,
     dragStart: { x: 0, y: 0 },
     resizeStart: { x: 0, y: 0, width: 0, height: 0 },
-    resizeDirection: null
+    resizeDirection: null,
+    // Add mode for setting start/finish nodes
+    settingMode: null // null, 'start', or 'finish'
   };
 
   updateDimensions = () => {
@@ -98,6 +100,22 @@ class PathfindingVisualizer extends Component {
   }
 
   handleMouseDown(row, col) {
+    if (this.state.visualizingAlgorithm || this.state.generatingMaze) {
+      return;
+    }
+
+    // Handle setting start/finish node mode
+    if (this.state.settingMode === 'start') {
+      this.setStartNode(row, col);
+      return;
+    }
+    
+    if (this.state.settingMode === 'finish') {
+      this.setFinishNode(row, col);
+      return;
+    }
+
+    // Normal wall toggle behavior
     const newGrid = getNewGridWithWalls(this.state.grid, row, col);
     this.setState({ grid: newGrid, mouseIsPressed: true });
   }
@@ -385,6 +403,88 @@ class PathfindingVisualizer extends Component {
       }, i * this.state.speed);
     }
   }
+
+  // Functions to set start/finish node positions
+  setStartNode = (row, col) => {
+    if (this.state.grid[row][col].isWall || (row === finishNodeRow && col === finishNodeCol)) {
+      return; // Can't place start node on wall or finish node
+    }
+
+    // Clear any existing path first
+    this.clearPath();
+
+    const oldGrid = this.state.grid.slice();
+    
+    // Remove old start node
+    if (oldGrid[startNodeRow] && oldGrid[startNodeRow][startNodeCol]) {
+      oldGrid[startNodeRow][startNodeCol] = {
+        ...oldGrid[startNodeRow][startNodeCol],
+        isStart: false,
+        distance: Infinity
+      };
+    }
+
+    // Set new start node
+    if (oldGrid[row] && oldGrid[row][col]) {
+      oldGrid[row][col] = {
+        ...oldGrid[row][col],
+        isStart: true,
+        distance: 0
+      };
+    }
+
+    // Update global variables
+    startNodeRow = row;
+    startNodeCol = col;
+
+    this.setState({ grid: oldGrid, settingMode: null });
+  };
+
+  setFinishNode = (row, col) => {
+    if (this.state.grid[row][col].isWall || (row === startNodeRow && col === startNodeCol)) {
+      return; // Can't place finish node on wall or start node
+    }
+
+    // Clear any existing path first
+    this.clearPath();
+
+    const oldGrid = this.state.grid.slice();
+    
+    // Remove old finish node
+    if (oldGrid[finishNodeRow] && oldGrid[finishNodeRow][finishNodeCol]) {
+      oldGrid[finishNodeRow][finishNodeCol] = {
+        ...oldGrid[finishNodeRow][finishNodeCol],
+        isFinish: false
+      };
+    }
+
+    // Set new finish node
+    if (oldGrid[row] && oldGrid[row][col]) {
+      oldGrid[row][col] = {
+        ...oldGrid[row][col],
+        isFinish: true
+      };
+    }
+
+    // Update global variables
+    finishNodeRow = row;
+    finishNodeCol = col;
+
+    this.setState({ grid: oldGrid, settingMode: null });
+  };
+
+  // Functions to activate setting modes
+  activateSetStartMode = () => {
+    this.setState({ settingMode: 'start' });
+  };
+
+  activateSetFinishMode = () => {
+    this.setState({ settingMode: 'finish' });
+  };
+
+  cancelSettingMode = () => {
+    this.setState({ settingMode: null });
+  };
 
   visualizeDijkstra() {
     if (this.state.visualizingAlgorithm || this.state.generatingMaze) {
@@ -756,6 +856,7 @@ class PathfindingVisualizer extends Component {
           visualizingAlgorithm={this.state.visualizingAlgorithm}
           generatingMaze={this.state.generatingMaze}
           showDistances={this.state.showDistances}
+          settingMode={this.state.settingMode}
           visualizeDijkstra={this.visualizeDijkstra.bind(this)}
           visualizeAStar={this.visualizeAStar.bind(this)}
           visualizeGreedyBFS={this.visualizeGreedyBFS.bind(this)}
@@ -774,12 +875,15 @@ class PathfindingVisualizer extends Component {
           clearPath={this.clearPath.bind(this)}
           updateSpeed={this.updateSpeed.bind(this)}
           toggleDistanceMode={this.toggleDistanceMode.bind(this)}
+          activateSetStartMode={this.activateSetStartMode.bind(this)}
+          activateSetFinishMode={this.activateSetFinishMode.bind(this)}
+          cancelSettingMode={this.cancelSettingMode.bind(this)}
         />
         <div
           className={
             this.state.visualizingAlgorithm || this.state.generatingMaze
               ? "grid-visualizing"
-              : "grid"
+              : `grid${this.state.settingMode ? ' setting-mode-active' : ''}${this.state.settingMode === 'start' ? ' setting-mode-start' : ''}${this.state.settingMode === 'finish' ? ' setting-mode-finish' : ''}`
           }
         >
           {grid.map((row, rowId) => {

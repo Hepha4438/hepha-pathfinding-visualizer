@@ -459,6 +459,31 @@ class NavBar extends Component {
               </button>
             </li>
 
+            {/* Set Start/Finish Nodes */}
+            <li>
+              <button
+                type="button"
+                className={`btn ${this.props.settingMode === 'start' ? 'btn-success' : 'btn-outline-success'}`}
+                onClick={() => this.props.settingMode === 'start' ? this.props.cancelSettingMode() : this.props.activateSetStartMode()}
+                disabled={this.props.visualizingAlgorithm || this.props.generatingMaze}
+                title="Click to set new start position"
+              >
+                {this.props.settingMode === 'start' ? 'Cancel' : 'Set Start Node'}
+              </button>
+            </li>
+
+            <li>
+              <button
+                type="button"
+                className={`btn ${this.props.settingMode === 'finish' ? 'btn-danger' : 'btn-outline-danger'}`}
+                onClick={() => this.props.settingMode === 'finish' ? this.props.cancelSettingMode() : this.props.activateSetFinishMode()}
+                disabled={this.props.visualizingAlgorithm || this.props.generatingMaze}
+                title="Click to set new finish position"
+              >
+                {this.props.settingMode === 'finish' ? 'Cancel' : 'Set Finish Node'}
+              </button>
+            </li>
+
           </ul>
         </div>
       </div>
