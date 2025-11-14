@@ -11,6 +11,8 @@ export function bidirectionalGreedySearch(grid, startNode, finishNode, metricTyp
   let visitedNodesInOrderStart = [];
   let unvisitedNodesFinish = [];
   let visitedNodesInOrderFinish = [];
+  let maxMemoryUsage = 0; // Track memory usage
+  
   startNode.distance = 0;
   finishNode.distance = 0;
   unvisitedNodesStart.push(startNode);
@@ -33,6 +35,7 @@ export function bidirectionalGreedySearch(grid, startNode, finishNode, metricTyp
       // Mark intersection nodes
       closestNodeStart.isIntersection = true;
       closestNodeFinish.isIntersection = true;
+      visitedNodesInOrderStart.maxMemoryUsage = maxMemoryUsage;
       return [visitedNodesInOrderStart, visitedNodesInOrderFinish, true];
     }
 
@@ -44,6 +47,7 @@ export function bidirectionalGreedySearch(grid, startNode, finishNode, metricTyp
         neighbour.isIntersection = true;
         visitedNodesInOrderStart.push(closestNodeStart);
         visitedNodesInOrderFinish.push(neighbour);
+        visitedNodesInOrderStart.maxMemoryUsage = maxMemoryUsage;
         return [visitedNodesInOrderStart, visitedNodesInOrderFinish, true];
       }
       let distance = closestNodeStart.distance + 1;
@@ -67,6 +71,7 @@ export function bidirectionalGreedySearch(grid, startNode, finishNode, metricTyp
         // Mark intersection node
         neighbour.isIntersection = true;
         visitedNodesInOrderStart.push(neighbour);
+        visitedNodesInOrderStart.maxMemoryUsage = maxMemoryUsage;
         return [visitedNodesInOrderStart, visitedNodesInOrderFinish, true];
       }
       let distance = closestNodeFinish.distance + 1;
@@ -82,7 +87,13 @@ export function bidirectionalGreedySearch(grid, startNode, finishNode, metricTyp
         neighbour.previousNode = closestNodeFinish;
       }
     }
+    
+    // Track memory: both queues + both visited lists
+    maxMemoryUsage = Math.max(maxMemoryUsage, 
+      unvisitedNodesStart.length + unvisitedNodesFinish.length);
   }
+  
+  visitedNodesInOrderStart.maxMemoryUsage = maxMemoryUsage;
   return [visitedNodesInOrderStart, visitedNodesInOrderFinish, false];
 }
 

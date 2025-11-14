@@ -5,16 +5,30 @@ export function dijkstra(grid, startNode, finishNode) {
   startNode.distance = 0;
   let unvisitedNodes = getNodes(grid);
   let visitedNodesInOrder = [];
+  let maxMemoryUsage = unvisitedNodes.length; // Initial: all nodes in priority queue
+  
   while (unvisitedNodes.length !== 0) {
     unvisitedNodes.sort((a, b) => a.distance - b.distance);
     let closestNode = unvisitedNodes.shift();
     if (closestNode.isWall) continue;
-    if (closestNode.distance === Infinity) return visitedNodesInOrder;
-    if (closestNode === finishNode) return visitedNodesInOrder;
+    if (closestNode.distance === Infinity) {
+      visitedNodesInOrder.maxMemoryUsage = maxMemoryUsage;
+      return visitedNodesInOrder;
+    }
+    if (closestNode === finishNode) {
+      visitedNodesInOrder.maxMemoryUsage = maxMemoryUsage;
+      return visitedNodesInOrder;
+    }
     closestNode.isVisited = true;
     visitedNodesInOrder.push(closestNode);
     updateUnvisitedNeighbours(closestNode, grid);
+    
+    // Track memory: priority queue + distance map (all nodes need distance tracking)
+    maxMemoryUsage = Math.max(maxMemoryUsage, unvisitedNodes.length);
   }
+  
+  visitedNodesInOrder.maxMemoryUsage = maxMemoryUsage;
+  return visitedNodesInOrder;
 }
 
 function getNodes(grid) {

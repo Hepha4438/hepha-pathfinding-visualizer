@@ -9,13 +9,18 @@ export function greedyBFS(grid, startNode, finishNode, metricType = METRIC_TYPES
   
   let unvisitedNodes = []; //open list
   let visitedNodesInOrder = []; //closed list
+  let maxMemoryUsage = 0; // Track memory usage
+  
   startNode.distance = 0;
   unvisitedNodes.push(startNode);
 
   while (unvisitedNodes.length !== 0) {
     unvisitedNodes.sort((a, b) => a.totalDistance - b.totalDistance);
     let closestNode = unvisitedNodes.shift();
-    if (closestNode === finishNode) return visitedNodesInOrder;
+    if (closestNode === finishNode) {
+      visitedNodesInOrder.maxMemoryUsage = maxMemoryUsage;
+      return visitedNodesInOrder;
+    }
 
     closestNode.isVisited = true;
     visitedNodesInOrder.push(closestNode);
@@ -35,7 +40,12 @@ export function greedyBFS(grid, startNode, finishNode, metricType = METRIC_TYPES
         neighbour.previousNode = closestNode;
       }
     }
+    
+    // Track memory: open list + closed list
+    maxMemoryUsage = Math.max(maxMemoryUsage, unvisitedNodes.length);
   }
+  
+  visitedNodesInOrder.maxMemoryUsage = maxMemoryUsage;
   return visitedNodesInOrder;
 }
 

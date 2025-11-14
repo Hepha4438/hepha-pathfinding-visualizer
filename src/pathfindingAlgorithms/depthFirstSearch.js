@@ -4,12 +4,17 @@ export function depthFirstSearch(grid, startNode, finishNode) {
   }
   let unvisitedNodes = [];
   let visitedNodesInOrder = [];
+  let maxMemoryUsage = 0; // Track stack depth
+  
   unvisitedNodes.push(startNode);
   
   while (unvisitedNodes.length !== 0) {
     let closestNode = unvisitedNodes.shift();
     if (closestNode.isWall) continue;
-    if (closestNode === finishNode) return visitedNodesInOrder;
+    if (closestNode === finishNode) {
+      visitedNodesInOrder.maxMemoryUsage = maxMemoryUsage;
+      return visitedNodesInOrder;
+    }
     visitedNodesInOrder.push(closestNode);
     closestNode.isVisited = true;
     
@@ -19,7 +24,12 @@ export function depthFirstSearch(grid, startNode, finishNode) {
       // DFS: No distance calculation for visited nodes
       unvisitedNodes.unshift(unvisitedNeighbour);
     }
+    
+    // Track memory: stack depth (unvisitedNodes = call stack)
+    maxMemoryUsage = Math.max(maxMemoryUsage, unvisitedNodes.length);
   }
+  
+  visitedNodesInOrder.maxMemoryUsage = maxMemoryUsage;
   return visitedNodesInOrder;
 }
 

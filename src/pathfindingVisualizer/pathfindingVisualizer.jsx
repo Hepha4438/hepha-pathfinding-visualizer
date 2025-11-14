@@ -65,7 +65,15 @@ class PathfindingVisualizer extends Component {
       pathLength: 0,
       visitedNodes: 0,
       memoryUsage: 0
-    }
+    },
+    // Add drag/resize state
+    overlayPosition: { x: 20, y: 20 },
+    overlaySize: { width: 300, height: 200 },
+    isDragging: false,
+    isResizing: false,
+    dragStart: { x: 0, y: 0 },
+    resizeStart: { x: 0, y: 0, width: 0, height: 0 },
+    resizeDirection: null
   };
 
   updateDimensions = () => {
@@ -152,7 +160,7 @@ class PathfindingVisualizer extends Component {
     });
   }
 
-  animateShortestPath = (nodesInShortestPathOrder, visitedNodesInOrder, algorithmName = 'Algorithm') => {
+  animateShortestPath = (nodesInShortestPathOrder, visitedNodesInOrder, algorithmName = 'Algorithm', maxMemoryUsage = 0) => {
     if (nodesInShortestPathOrder.length === 1)
       this.setState({ visualizingAlgorithm: false });
 
@@ -170,7 +178,7 @@ class PathfindingVisualizer extends Component {
           const pathLength = nodesInShortestPathOrder.length > 1 ? nodesInShortestPathOrder.length - 1 : 0;
           // Add 1 to visited nodes count if path was found (finish node reached)
           const visitedNodes = nodesInShortestPathOrder.length > 1 ? visitedNodesInOrder.length + 1 : visitedNodesInOrder.length;
-          const memoryUsage = Math.max(visitedNodesInOrder.length, nodesInShortestPathOrder.length);
+          const memoryUsage = maxMemoryUsage;
           
           // Show results overlay after a short delay
           setTimeout(() => {
@@ -214,7 +222,7 @@ class PathfindingVisualizer extends Component {
     }
   };
 
-  animateAlgorithm = (visitedNodesInOrder, nodesInShortestPathOrder, algorithmType = 'default') => {
+  animateAlgorithm = (visitedNodesInOrder, nodesInShortestPathOrder, algorithmType = 'default', maxMemoryUsage = 0) => {
     let newGrid = this.state.grid.slice();
     for (let row of newGrid) {
       for (let node of row) {
@@ -263,7 +271,8 @@ class PathfindingVisualizer extends Component {
           this.animateShortestPath(
             nodesInShortestPathOrder,
             visitedNodesInOrder,
-            algorithmType === 'DFS' ? 'Depth First Search' : this.currentAlgorithmName || 'Algorithm'
+            algorithmType === 'DFS' ? 'Depth First Search' : this.currentAlgorithmName || 'Algorithm',
+            maxMemoryUsage
           );
         }, i * this.state.speed);
         return;
@@ -343,7 +352,8 @@ class PathfindingVisualizer extends Component {
             this.animateShortestPath(
               nodesInShortestPathOrder,
               visitedNodesInOrder,
-              'Bidirectional Greedy Search'
+              'Bidirectional Greedy Search',
+              this.bidirectionalMaxMemoryUsage || visitedNodesInOrder.length
             );
           } else {
             this.setState({ visualizingAlgorithm: false });
@@ -390,7 +400,9 @@ class PathfindingVisualizer extends Component {
       const nodesInShortestPathOrder = getNodesInShortestPathOrderDijkstra(
         finishNode
       );
-      this.animateAlgorithm(visitedNodesInOrder, nodesInShortestPathOrder);
+      // Use actual memory usage tracked in algorithm
+      const maxMemoryUsage = visitedNodesInOrder.maxMemoryUsage || 0;
+      this.animateAlgorithm(visitedNodesInOrder, nodesInShortestPathOrder, 'default', maxMemoryUsage);
     }, this.state.speed);
   }
 
@@ -408,7 +420,9 @@ class PathfindingVisualizer extends Component {
       const nodesInShortestPathOrder = getNodesInShortestPathOrderAstar(
         finishNode
       );
-      this.animateAlgorithm(visitedNodesInOrder, nodesInShortestPathOrder);
+      // Use actual memory usage tracked in algorithm
+      const maxMemoryUsage = visitedNodesInOrder.maxMemoryUsage || 0;
+      this.animateAlgorithm(visitedNodesInOrder, nodesInShortestPathOrder, 'default', maxMemoryUsage);
     }, this.state.speed);
   }
 
@@ -430,7 +444,9 @@ class PathfindingVisualizer extends Component {
       const nodesInShortestPathOrder = getNodesInShortestPathOrderBFS(
         finishNode
       );
-      this.animateAlgorithm(visitedNodesInOrder, nodesInShortestPathOrder);
+      // Use actual memory usage tracked in algorithm
+      const maxMemoryUsage = visitedNodesInOrder.maxMemoryUsage || 0;
+      this.animateAlgorithm(visitedNodesInOrder, nodesInShortestPathOrder, 'default', maxMemoryUsage);
     }, this.state.speed);
   }
 
@@ -447,7 +463,9 @@ class PathfindingVisualizer extends Component {
       const nodesInShortestPathOrder = getNodesInShortestPathOrderDFS(
         finishNode
       );
-      this.animateAlgorithm(visitedNodesInOrder, nodesInShortestPathOrder, 'DFS');
+      // Use actual memory usage tracked in algorithm
+      const maxMemoryUsage = visitedNodesInOrder.maxMemoryUsage || 0;
+      this.animateAlgorithm(visitedNodesInOrder, nodesInShortestPathOrder, 'DFS', maxMemoryUsage);
     }, this.state.speed);
   }
 
@@ -465,7 +483,9 @@ class PathfindingVisualizer extends Component {
       const nodesInShortestPathOrder = getNodesInShortestPathOrderGreedyBFS(
         finishNode
       );
-      this.animateAlgorithm(visitedNodesInOrder, nodesInShortestPathOrder);
+      // Use actual memory usage tracked in algorithm
+      const maxMemoryUsage = visitedNodesInOrder.maxMemoryUsage || 0;
+      this.animateAlgorithm(visitedNodesInOrder, nodesInShortestPathOrder, 'default', maxMemoryUsage);
     }, this.state.speed);
   }
 
@@ -492,6 +512,8 @@ class PathfindingVisualizer extends Component {
         visitedNodesInOrderStart[visitedNodesInOrderStart.length - 1],
         visitedNodesInOrderFinish[visitedNodesInOrderFinish.length - 1]
       );
+      // Use actual memory usage tracked in algorithm
+      this.bidirectionalMaxMemoryUsage = visitedNodesInOrderStart.maxMemoryUsage || 0;
       this.animateBidirectionalAlgorithm(
         visitedNodesInOrderStart,
         visitedNodesInOrderFinish,
@@ -595,40 +617,135 @@ class PathfindingVisualizer extends Component {
     this.setState({ showResults: false });
   };
 
-  // Add results overlay component
+  // Add draggable and resizable results overlay component
   renderResultsOverlay = () => {
     if (!this.state.showResults) return null;
     
     const { algorithmName, pathLength, visitedNodes, memoryUsage } = this.state.algorithmResults;
     
     return (
-      <div className="results-overlay" onClick={this.hideAlgorithmResults}>
-        <div className="results-box" onClick={(e) => e.stopPropagation()}>
-          <div className="results-header">
-            <h3>Algorithm Results</h3>
-            <button className="close-btn" onClick={this.hideAlgorithmResults}>×</button>
+      <div 
+        className="results-overlay-draggable"
+        style={{
+          left: this.state.overlayPosition?.x || 20,
+          top: this.state.overlayPosition?.y || 20,
+          width: this.state.overlaySize?.width || 300,
+          height: this.state.overlaySize?.height || 200
+        }}
+        onMouseDown={this.handleOverlayMouseDown}
+      >
+        <div className="results-header-draggable" onMouseDown={this.handleDragStart}>
+          <h3>Algorithm Results</h3>
+        </div>
+        
+        <div className="results-content-scrollable">
+          <div className="result-item">
+            <span className="result-label">Algorithm:</span>
+            <span className="result-value">{algorithmName}</span>
           </div>
-          <div className="results-content">
-            <div className="result-item">
-              <span className="result-label">Algorithm:</span>
-              <span className="result-value">{algorithmName}</span>
-            </div>
-            <div className="result-item">
-              <span className="result-label">Path Length:</span>
-              <span className="result-value">{pathLength}</span>
-            </div>
-            <div className="result-item">
-              <span className="result-label">Visited Nodes:</span>
-              <span className="result-value">{visitedNodes}</span>
-            </div>
-            <div className="result-item">
-              <span className="result-label">Memory Usage:</span>
-              <span className="result-value">{memoryUsage}</span>
-            </div>
+          <div className="result-item">
+            <span className="result-label">Path Length:</span>
+            <span className="result-value">{pathLength}</span>
+          </div>
+          <div className="result-item">
+            <span className="result-label">Visited Nodes:</span>
+            <span className="result-value">{visitedNodes}</span>
+          </div>
+          <div className="result-item">
+            <span className="result-label">Memory Usage:</span>
+            <span className="result-value">{memoryUsage}</span>
           </div>
         </div>
+        
+        {/* Resize handles */}
+        <div className="resize-handle resize-se" onMouseDown={(e) => this.handleResizeStart(e, 'se')}></div>
+        <div className="resize-handle resize-s" onMouseDown={(e) => this.handleResizeStart(e, 's')}></div>
+        <div className="resize-handle resize-e" onMouseDown={(e) => this.handleResizeStart(e, 'e')}></div>
       </div>
     );
+  };
+
+  // Drag and resize handlers
+  handleDragStart = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    this.setState({
+      isDragging: true,
+      dragStart: {
+        x: e.clientX - this.state.overlayPosition.x,
+        y: e.clientY - this.state.overlayPosition.y
+      }
+    });
+    document.addEventListener('mousemove', this.handleDragMove);
+    document.addEventListener('mouseup', this.handleDragEnd);
+  };
+
+  handleDragMove = (e) => {
+    if (!this.state.isDragging) return;
+    
+    const newX = Math.max(0, Math.min(window.innerWidth - this.state.overlaySize.width, 
+      e.clientX - this.state.dragStart.x));
+    const newY = Math.max(0, Math.min(window.innerHeight - this.state.overlaySize.height, 
+      e.clientY - this.state.dragStart.y));
+    
+    this.setState({
+      overlayPosition: { x: newX, y: newY }
+    });
+  };
+
+  handleDragEnd = () => {
+    this.setState({ isDragging: false });
+    document.removeEventListener('mousemove', this.handleDragMove);
+    document.removeEventListener('mouseup', this.handleDragEnd);
+  };
+
+  handleResizeStart = (e, direction) => {
+    e.preventDefault();
+    e.stopPropagation();
+    this.setState({
+      isResizing: true,
+      resizeDirection: direction,
+      resizeStart: {
+        x: e.clientX,
+        y: e.clientY,
+        width: this.state.overlaySize.width,
+        height: this.state.overlaySize.height
+      }
+    });
+    document.addEventListener('mousemove', this.handleResizeMove);
+    document.addEventListener('mouseup', this.handleResizeEnd);
+  };
+
+  handleResizeMove = (e) => {
+    if (!this.state.isResizing) return;
+    
+    const { resizeStart, resizeDirection } = this.state;
+    const deltaX = e.clientX - resizeStart.x;
+    const deltaY = e.clientY - resizeStart.y;
+    
+    let newWidth = resizeStart.width;
+    let newHeight = resizeStart.height;
+    
+    if (resizeDirection.includes('e')) {
+      newWidth = Math.max(250, Math.min(600, resizeStart.width + deltaX));
+    }
+    if (resizeDirection.includes('s')) {
+      newHeight = Math.max(150, Math.min(400, resizeStart.height + deltaY));
+    }
+    
+    this.setState({
+      overlaySize: { width: newWidth, height: newHeight }
+    });
+  };
+
+  handleResizeEnd = () => {
+    this.setState({ isResizing: false, resizeDirection: null });
+    document.removeEventListener('mousemove', this.handleResizeMove);
+    document.removeEventListener('mouseup', this.handleResizeEnd);
+  };
+
+  handleOverlayMouseDown = (e) => {
+    e.stopPropagation();
   };
 
   render() {
