@@ -14,6 +14,7 @@ class NavBar extends Component {
     showMetricDropdown: false,
     metricState: "Metric Space",
     heuristicWeight: 1.0,
+    showAdvancedOptions: false, // Sidebar ẩn mặc định
   };
 
   toggleDropdown = (type) => {
@@ -60,6 +61,26 @@ class NavBar extends Component {
       this.setState({ maze: selection });
     }
   }
+
+  updateWeight = (event) => {
+    if (this.props.visualizingAlgorithm || this.props.generatingMaze) {
+      return;
+    }
+
+    const weight = parseFloat(event.target.value);
+
+    // Same logic as selectAlgorithm: if different weight and path exists, clear path but keep walls/maze
+    if (weight !== this.state.heuristicWeight && this.state.pathState) {
+      this.clearPath();
+      this.setState({ heuristicWeight: weight });
+    } else {
+      this.setState({ heuristicWeight: weight });
+    }
+  };
+
+  toggleAdvancedOptions = () => {
+    this.setState({ showAdvancedOptions: !this.state.showAdvancedOptions });
+  };
 
   visualizeAlgorithm() {
     if (this.props.visualizingAlgorithm || this.props.generatingMaze) {
@@ -192,22 +213,6 @@ class NavBar extends Component {
     }
   }
 
-  updateWeight = (event) => {
-    if (this.props.visualizingAlgorithm || this.props.generatingMaze) {
-      return;
-    }
-
-    const weight = parseFloat(event.target.value);
-
-    // Same logic as selectAlgorithm: if different weight and path exists, clear path but keep walls/maze
-    if (weight !== this.state.heuristicWeight && this.state.pathState) {
-      this.clearPath();
-      this.setState({ heuristicWeight: weight });
-    } else {
-      this.setState({ heuristicWeight: weight });
-    }
-  };
-
   render() {
     return (
       <div>
@@ -217,187 +222,209 @@ class NavBar extends Component {
             <span className="navbar-brand h1 mb-0">
               Pathfinding Visualizer
             </span>
-            <a
-              href="https://github.com/Hepha4438/hepha-pathfinding-visualizer"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-outline-light btn-sm"
-            >
-              GitHub
-            </a>
+            <div className="ms-auto d-flex align-items-center">
+              <a
+                href="https://github.com/Hepha4438/hepha-pathfinding-visualizer"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-outline-light btn-sm me-2"
+              >
+                GitHub
+              </a>
+              <button
+                type="button"
+                className={`btn btn-sm ${this.state.showAdvancedOptions ? 'btn-primary' : 'btn-outline-primary'}`}
+                onClick={this.toggleAdvancedOptions}
+                title="Toggle settings panel"
+                style={{fontSize: '18px', lineHeight: '1'}}
+              >
+                ⋮
+              </button>
+            </div>
           </div>
         </nav>
 
-        {/* Dòng 2: Controls */}
+        {/* Dòng 2: Algorithm Setup + Config + Maze Setup */}
         <nav className="navbar navbar-expand navbar-dark bg-secondary">
           <div className="container-fluid">
-            <div className="navbar-collapse" id="navbarNavDropdown">
-              <ul className="navbar-nav">
-                {/* ...existing dropdown code... */}
-            <li className="nav-item dropdown">
-              <div className="dropdown">
+          <div className="navbar-collapse" id="navbarNavDropdown">
+            <ul className="navbar-nav">
+              {/* === 1. ALGORITHM SETUP === */}
+              <li className="nav-item dropdown">
+                <div className="dropdown">
+                  <button
+                    className="btn btn-light dropdown-toggle"
+                    type="button"
+                    onClick={() => this.toggleDropdown('algorithm')}
+                  >
+                    {this.state.algorithm === "Visualize Algorithm" ? "Algorithms" : this.state.algorithm}
+                  </button>
+                  <ul className={`dropdown-menu ${this.state.showAlgorithmDropdown ? 'show' : ''}`}>
+                  <li><button
+                    className="dropdown-item"
+                    type="button"
+                    onClick={() => {this.selectAlgorithm("Dijkstra"); this.toggleDropdown('');}}
+                  >
+                    Dijkstra's Algorithm
+                  </button></li>
+                  <li><button
+                    className="dropdown-item"
+                    type="button"
+                    onClick={() => {this.selectAlgorithm("A*"); this.toggleDropdown('');}}
+                  >
+                    A* Algorithm
+                  </button></li>
+                  <li><button
+                    className="dropdown-item"
+                    type="button"
+                    onClick={() => {this.selectAlgorithm("Greedy BFS"); this.toggleDropdown('');}}
+                  >
+                    Greedy Best First Search
+                  </button></li>
+                  <li><button
+                    className="dropdown-item"
+                    type="button"
+                    onClick={() => {this.selectAlgorithm("Bidirectional Greedy"); this.toggleDropdown('');}}
+                  >
+                    Bidirectional Greedy Search
+                  </button></li>
+                  <li><hr className="dropdown-divider" /></li>
+                  <li><button
+                    className="dropdown-item"
+                    type="button"
+                    onClick={() => {this.selectAlgorithm("Breadth First Search"); this.toggleDropdown('');}}
+                  >
+                    Breadth First Search
+                  </button></li>
+                  <li><button
+                    className="dropdown-item"
+                    type="button"
+                    onClick={() => {this.selectAlgorithm("Depth First Search"); this.toggleDropdown('');}}
+                  >
+                    Depth First Search
+                  </button></li>
+                </ul>
+                </div>
+              </li>
+              <li>
                 <button
-                  className="btn btn-light dropdown-toggle"
                   type="button"
-                  onClick={() => this.toggleDropdown('algorithm')}
+                  className="btn btn-success"
+                  onClick={() => this.visualizeAlgorithm()}
                 >
-                  {this.state.algorithm === "Visualize Algorithm" ? "Algorithms" : this.state.algorithm}
+                  Visualize
                 </button>
-                <ul className={`dropdown-menu ${this.state.showAlgorithmDropdown ? 'show' : ''}`}>
-                <li><button
-                  className="dropdown-item"
-                  type="button"
-                  onClick={() => {this.selectAlgorithm("Dijkstra"); this.toggleDropdown('');}}
-                >
-                  Dijkstra's Algorithm
-                </button></li>
-                <li><button
-                  className="dropdown-item"
-                  type="button"
-                  onClick={() => {this.selectAlgorithm("A*"); this.toggleDropdown('');}}
-                >
-                  A* Algorithm
-                </button></li>
-                <li><button
-                  className="dropdown-item"
-                  type="button"
-                  onClick={() => {this.selectAlgorithm("Greedy BFS"); this.toggleDropdown('');}}
-                >
-                  Greedy Best First Search
-                </button></li>
-                <li><button
-                  className="dropdown-item"
-                  type="button"
-                  onClick={() => {this.selectAlgorithm("Bidirectional Greedy"); this.toggleDropdown('');}}
-                >
-                  Bidirectional Greedy Search
-                </button></li>
-                <li><hr className="dropdown-divider" /></li>
-                <li><button
-                  className="dropdown-item"
-                  type="button"
-                  onClick={() => {this.selectAlgorithm("Breadth First Search"); this.toggleDropdown('');}}
-                >
-                  Breadth First Search
-                </button></li>
-                <li><button
-                  className="dropdown-item"
-                  type="button"
-                  onClick={() => {this.selectAlgorithm("Depth First Search"); this.toggleDropdown('');}}
-                >
-                  Depth First Search
-                </button></li>
-              </ul>
-              </div>
-            </li>
-            <li>
-              <button
-                type="button"
-                className="btn btn-success"
-                onClick={() => this.visualizeAlgorithm()}
-              >
-                Visualize
-              </button>
-            </li>
-            <li className="nav-item dropdown">
-              <div className="dropdown">
-                <button
-                  className="btn btn-light dropdown-toggle"
-                  type="button"
-                  onClick={() => this.toggleDropdown('maze')}
-                >
-                  {this.state.maze === "Generate Maze" ? "Mazes" : this.state.maze}
-                </button>
-                <ul className={`dropdown-menu ${this.state.showMazeDropdown ? 'show' : ''}`}>
-                <li><button
-                  className="dropdown-item"
-                  type="button"
-                  onClick={() => {this.selectMaze("Random Maze"); this.toggleDropdown('');}}
-                >
-                  Random Maze
-                </button></li>
-                <li><button
-                  className="dropdown-item"
-                  type="button"
-                  onClick={() => {this.selectMaze("Recursive Division Maze"); this.toggleDropdown('');}}
-                >
-                  Recursive Division Maze
-                </button></li>
-                <li><button
-                  className="dropdown-item"
-                  type="button"
-                  onClick={() => {this.selectMaze("Vertical Division Maze"); this.toggleDropdown('');}}
-                >
-                  Vertical Division Maze
-                </button></li>
-                <li><button
-                  className="dropdown-item"
-                  type="button"
-                  onClick={() => {this.selectMaze("Horizontal Division Maze"); this.toggleDropdown('');}}
-                >
-                  Horizontal Division Maze
-                </button></li>
-              </ul>
-              </div>
-            </li>
-            <li>
-              <button
-                type="button"
-                className="btn btn-success"
-                onClick={() => this.generateMaze()}
-              >
-                Generate
-              </button>
-            </li>
-            <li>
-              <button
-                type="button"
-                className="btn btn-danger"
-                onClick={() => this.clearGrid()}
-              >
-                Reset
-              </button>
-            </li>
-            <li className="nav-item dropdown">
-              <div className="dropdown">
-                <button
-                  className="btn btn-info dropdown-toggle"
-                  type="button"
-                  onClick={() => this.toggleDropdown('speed')}
-                >
-                  {this.state.speedState}
-                </button>
-                <ul className={`dropdown-menu ${this.state.showSpeedDropdown ? 'show' : ''}`}>
-                <li><button
-                  className="dropdown-item"
-                  type="button"
-                  onClick={() => {this.changeSpeed("Slow"); this.toggleDropdown('');}}
-                >
-                  Slow
-                </button></li>
-                <li><button
-                  className="dropdown-item"
-                  type="button"
-                  onClick={() => {this.changeSpeed("Medium"); this.toggleDropdown('');}}
-                >
-                  Medium
-                </button></li>
-                <li><button
-                  className="dropdown-item"
-                  type="button"
-                  onClick={() => {this.changeSpeed("Fast"); this.toggleDropdown('');}}
-                >
-                  Fast
-                </button></li>
-              </ul>
-              </div>
-            </li>
+              </li>
 
-            {/* Metric Space Dropdown */}
-            <li className="nav-item dropdown">
-              <div className="dropdown">
+              {/* === 3. MAZE SETUP === */}
+              <li className="nav-item dropdown">
+                <div className="dropdown">
+                  <button
+                    className="btn btn-light dropdown-toggle"
+                    type="button"
+                    onClick={() => this.toggleDropdown('maze')}
+                  >
+                    {this.state.maze === "Generate Maze" ? "Mazes" : this.state.maze}
+                  </button>
+                  <ul className={`dropdown-menu ${this.state.showMazeDropdown ? 'show' : ''}`}>
+                  <li><button
+                    className="dropdown-item"
+                    type="button"
+                    onClick={() => {this.selectMaze("Random Maze"); this.toggleDropdown('');}}
+                  >
+                    Random Maze
+                  </button></li>
+                  <li><button
+                    className="dropdown-item"
+                    type="button"
+                    onClick={() => {this.selectMaze("Recursive Division Maze"); this.toggleDropdown('');}}
+                  >
+                    Recursive Division Maze
+                  </button></li>
+                  <li><button
+                    className="dropdown-item"
+                    type="button"
+                    onClick={() => {this.selectMaze("Vertical Division Maze"); this.toggleDropdown('');}}
+                  >
+                    Vertical Division Maze
+                  </button></li>
+                  <li><button
+                    className="dropdown-item"
+                    type="button"
+                    onClick={() => {this.selectMaze("Horizontal Division Maze"); this.toggleDropdown('');}}
+                  >
+                    Horizontal Division Maze
+                  </button></li>
+                </ul>
+                </div>
+              </li>
+              <li>
                 <button
-                  className="btn btn-warning dropdown-toggle"
+                  type="button"
+                  className="btn btn-success"
+                  onClick={() => this.generateMaze()}
+                >
+                  Generate
+                </button>
+              </li>
+
+              {/* === RESET BUTTON === */}
+              <li className="ms-auto">
+                <button
+                  type="button"
+                  className="btn btn-danger"
+                  onClick={() => this.clearGrid()}
+                >
+                  Reset
+                </button>
+              </li>
+
+              {/* === NODE SETUP === */}
+              <li>
+                <button
+                  type="button"
+                  className={`btn ${this.props.settingMode === 'start' ? 'btn-success' : 'btn-outline-success'}`}
+                  onClick={() => this.props.settingMode === 'start' ? this.props.cancelSettingMode() : this.props.activateSetStartMode()}
+                  disabled={this.props.visualizingAlgorithm || this.props.generatingMaze}
+                  title="Click to set new start position"
+                >
+                  {this.props.settingMode === 'start' ? 'Cancel' : 'Set Start'}
+                </button>
+              </li>
+
+              <li>
+                <button
+                  type="button"
+                  className={`btn ${this.props.settingMode === 'finish' ? 'btn-danger' : 'btn-outline-danger'}`}
+                  onClick={() => this.props.settingMode === 'finish' ? this.props.cancelSettingMode() : this.props.activateSetFinishMode()}
+                  disabled={this.props.visualizingAlgorithm || this.props.generatingMaze}
+                  title="Click to set new finish position"
+                >
+                  {this.props.settingMode === 'finish' ? 'Cancel' : 'Set Finish'}
+                </button>
+              </li>
+
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+        {/* Backdrop overlay khi sidebar mở */}
+        {this.state.showAdvancedOptions && (
+          <div className="sidebar-backdrop" onClick={this.toggleAdvancedOptions}></div>
+        )}
+
+        {/* Sidebar: Animation Settings + Node Setup + Reset (Collapsible) */}
+        <div className={`advanced-options-sidebar ${this.state.showAdvancedOptions ? 'sidebar-open' : 'sidebar-closed'}`}>
+          <div className="sidebar-content">
+            <h6 className="sidebar-title">Advanced Options</h6>
+            
+            {/* === ALGORITHM SETUP === */}
+            <div className="sidebar-section">
+              <label className="sidebar-label">Algorithm Setup:</label>
+              <div className="dropdown mb-2">
+                <button
+                  className="btn btn-warning btn-sm dropdown-toggle w-100"
                   type="button"
                   onClick={() => this.toggleDropdown('metric')}
                 >
@@ -427,12 +454,9 @@ class NavBar extends Component {
                   </button></li>
                 </ul>
               </div>
-            </li>
 
-            {/* Weight Control */}
-            <li className="nav-item">
-              <div className="d-flex align-items-center">
-                <label className="text-white me-2">Weight:</label>
+              <div className="d-flex align-items-center mb-3">
+                <label className="text-white me-2" style={{fontSize: '0.85rem'}}>Weight:</label>
                 <input
                   type="range"
                   className="form-range me-2"
@@ -441,66 +465,69 @@ class NavBar extends Component {
                   step="0.1"
                   value={this.state.heuristicWeight}
                   onChange={this.updateWeight}
-                  style={{width: "120px"}}
+                  style={{width: "100px"}}
                 />
-                <span className="text-white">{this.state.heuristicWeight.toFixed(1)}</span>
+                <span className="text-white" style={{fontSize: '0.85rem'}}>{this.state.heuristicWeight.toFixed(1)}</span>
               </div>
-            </li>
+            </div>
 
-            {/* Distance Mode Toggle */}
-            <li>
+            {/* === ANIMATION SETTINGS === */}
+            <div className="sidebar-section">
+              <label className="sidebar-label">Animation setup:</label>
+              <div className="dropdown mb-2">
+                <button
+                  className="btn btn-success btn-sm dropdown-toggle w-100"
+                  type="button"
+                  onClick={() => this.toggleDropdown('speed')}
+                >
+                  {this.state.speedState}
+                </button>
+                <ul className={`dropdown-menu ${this.state.showSpeedDropdown ? 'show' : ''}`}>
+                <li><button
+                  className="dropdown-item"
+                  type="button"
+                  onClick={() => {this.changeSpeed("Slow"); this.toggleDropdown('');}}
+                >
+                  Slow
+                </button></li>
+                <li><button
+                  className="dropdown-item"
+                  type="button"
+                  onClick={() => {this.changeSpeed("Medium"); this.toggleDropdown('');}}
+                >
+                  Medium
+                </button></li>
+                <li><button
+                  className="dropdown-item"
+                  type="button"
+                  onClick={() => {this.changeSpeed("Fast"); this.toggleDropdown('');}}
+                >
+                  Fast
+                </button></li>
+              </ul>
+              </div>
+
               <button
                 type="button"
-                className={`btn ${this.props.showDistances ? 'btn-warning' : 'btn-outline-light'}`}
-                onClick={() => this.props.toggleDistanceMode()}
-                title="Toggle distance values display on visited nodes"
-              >
-                {this.props.showDistances ? 'Hide Distances' : 'Show Distances'}
-              </button>
-            </li>
-
-            {/* Skip Animation Toggle */}
-            <li>
-              <button
-                type="button"
-                className={`btn ${this.props.skipAnimation ? 'btn-info' : 'btn-outline-info'}`}
+                className={`btn btn-sm w-100 mb-2 ${this.props.skipAnimation ? 'btn-info' : 'btn-outline-info'}`}
                 onClick={() => this.props.toggleSkipAnimation()}
                 disabled={this.props.visualizingAlgorithm || this.props.generatingMaze}
                 title="Skip animation and show results immediately"
               >
                 {this.props.skipAnimation ? 'Animation ON' : 'Skip Animation'}
               </button>
-            </li>
 
-            {/* Set Start/Finish Nodes */}
-            <li>
               <button
                 type="button"
-                className={`btn ${this.props.settingMode === 'start' ? 'btn-success' : 'btn-outline-success'}`}
-                onClick={() => this.props.settingMode === 'start' ? this.props.cancelSettingMode() : this.props.activateSetStartMode()}
-                disabled={this.props.visualizingAlgorithm || this.props.generatingMaze}
-                title="Click to set new start position"
+                className={`btn btn-sm w-100 mb-3 ${this.props.showDistances ? 'btn-warning' : 'btn-outline-warning'}`}
+                onClick={() => this.props.toggleDistanceMode()}
+                title="Toggle distance values display on visited nodes"
               >
-                {this.props.settingMode === 'start' ? 'Cancel' : 'Set Start Node'}
+                {this.props.showDistances ? 'Hide Distances' : 'Show Distances'}
               </button>
-            </li>
-
-            <li>
-              <button
-                type="button"
-                className={`btn ${this.props.settingMode === 'finish' ? 'btn-danger' : 'btn-outline-danger'}`}
-                onClick={() => this.props.settingMode === 'finish' ? this.props.cancelSettingMode() : this.props.activateSetFinishMode()}
-                disabled={this.props.visualizingAlgorithm || this.props.generatingMaze}
-                title="Click to set new finish position"
-              >
-                {this.props.settingMode === 'finish' ? 'Cancel' : 'Set Finish Node'}
-              </button>
-            </li>
-
-          </ul>
+            </div>
+          </div>
         </div>
-      </div>
-    </nav>
   </div>
     );
   }

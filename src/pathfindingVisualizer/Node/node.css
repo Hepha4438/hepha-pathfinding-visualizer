@@ -27,6 +27,8 @@
 
 .node-start {
   background-color: green;
+  animation: pulseStart 2s ease-in-out infinite;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
 }
 
 /* Distance styling for start node (green background) */
@@ -34,10 +36,13 @@
   color: #ffffff;
   background-color: transparent;
   font-weight: 900;
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
 }
 
 .node-finish {
   background-color: red;
+  animation: pulseFinish 2s ease-in-out infinite;
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
 }
 
 /* Distance styling for finish node (red background) */
@@ -45,6 +50,7 @@
   color: #ffffff;
   background-color: transparent;
   font-weight: 900;
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
 }
 
 .node-finish-reached {

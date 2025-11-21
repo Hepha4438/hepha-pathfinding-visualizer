@@ -1176,6 +1176,12 @@ const createNode = (row, col) => {
 const getNewGridWithWalls = (grid, row, col) => {
   let newGrid = grid.slice();
   let node = grid[row][col];
+  
+  // Prevent start and finish nodes from being turned into walls
+  if (node.isStart || node.isFinish) {
+    return newGrid;
+  }
+  
   let newNode = {
     ...node,
     isWall: !node.isWall,
