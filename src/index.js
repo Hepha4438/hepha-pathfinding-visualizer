@@ -1,10 +1,10 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import * as serviceWorker from "./serviceWorker";
+import * as serviceWorker from "./serviceWorker.js";
 import "bootstrap/dist/css/bootstrap.css";
-import "bootstrap/js/dist/dropdown";
-import PathfindingVisualizer from "./pathfindingVisualizer/pathfindingVisualizer";
+import "bootstrap/js/dist/dropdown.js";
+import PathfindingVisualizer from "./pathfindingVisualizer/pathfindingVisualizer.jsx";
 
 const container = document.getElementById("root");
 const root = createRoot(container);

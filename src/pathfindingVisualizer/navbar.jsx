@@ -461,7 +461,7 @@ class NavBar extends Component {
                   type="range"
                   className="form-range me-2"
                   min="0"
-                  max="1"
+                  max="10"
                   step="0.1"
                   value={this.state.heuristicWeight}
                   onChange={this.updateWeight}

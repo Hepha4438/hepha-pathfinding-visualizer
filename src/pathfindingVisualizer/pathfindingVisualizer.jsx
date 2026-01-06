@@ -1,39 +1,39 @@
 import React, { Component } from "react";
 import "./pathfindingVisualizer.css";
-import Node from "./Node/node";
-import NavBar from "./navbar";
+import Node from "./Node/node.jsx";
+import NavBar from "./navbar.jsx";
 
 //Pathfinding Algorithms
 import {
   dijkstra,
   getNodesInShortestPathOrderDijkstra,
-} from "../pathfindingAlgorithms/dijkstra";
+} from "../pathfindingAlgorithms/dijkstra.js";
 import {
   astar,
   getNodesInShortestPathOrderAstar,
-} from "../pathfindingAlgorithms/astar";
+} from "../pathfindingAlgorithms/astar.js";
 import {
   breadthFirstSearch,
   getNodesInShortestPathOrderBFS,
-} from "../pathfindingAlgorithms/breadthFirstSearch";
+} from "../pathfindingAlgorithms/breadthFirstSearch.js";
 import {
   depthFirstSearch,
   getNodesInShortestPathOrderDFS,
-} from "../pathfindingAlgorithms/depthFirstSearch";
+} from "../pathfindingAlgorithms/depthFirstSearch.js";
 import {
   greedyBFS,
   getNodesInShortestPathOrderGreedyBFS,
-} from "../pathfindingAlgorithms/greedyBestFirstSearch";
+} from "../pathfindingAlgorithms/greedyBestFirstSearch.js";
 import {
   bidirectionalGreedySearch,
   getNodesInShortestPathOrderBidirectionalGreedySearch,
-} from "../pathfindingAlgorithms/bidirectionalGreedySearch";
+} from "../pathfindingAlgorithms/bidirectionalGreedySearch.js";
 
 //Maze Algorithms
-import { randomMaze } from "../mazeAlgorithms/randomMaze";
-import { recursiveDivisionMaze } from "../mazeAlgorithms/recursiveDivision";
-import { verticalMaze } from "../mazeAlgorithms/verticalMaze";
-import { horizontalMaze } from "../mazeAlgorithms/horizontalMaze";
+import { randomMaze } from "../mazeAlgorithms/randomMaze.js";
+import { recursiveDivisionMaze } from "../mazeAlgorithms/recursiveDivision.js";
+import { verticalMaze } from "../mazeAlgorithms/verticalMaze.js";
+import { horizontalMaze } from "../mazeAlgorithms/horizontalMaze.js";
 
 const initialNum = getInitialNum(window.innerWidth, window.innerHeight);
 const initialNumRows = initialNum[0];
